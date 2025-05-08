@@ -1,0 +1,1347 @@
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Startup Tycoon: Kollaborative Simulation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        .avatar-hover:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .roleplay-card {
+            perspective: 1000px;
+        }
+        .roleplay-card-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .roleplay-card:hover .roleplay-card-inner {
+            transform: rotateY(10deg);
+        }
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #EF4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header mit Spielerinformationen -->
+        <header class="bg-white rounded-xl shadow-md p-6 mb-8 flex flex-col sm:flex-row justify-between items-center gap-6">
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Player" 
+                         alt="Spieler Avatar, männlich, neutraler Gesichtsausdruck, blaues Hemd" 
+                         class="w-16 h-16 rounded-full border-4 border-blue-500 avatar-hover transition-all duration-300" />
+                    <div class="absolute -bottom-1 -right-1 bg-green-500 rounded-full w-5 h-5 border-2 border-white"></div>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Startup Tycoon</h1>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-gray-600">CEO: <span class="font-semibold" id="player-name">Alex Mercer</span></span>
+                        <button onclick="editPlayerName()" class="text-blue-500 hover:text-blue-700" aria-label="Spielernamen bearbeiten">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex space-x-6">
+                <div class="text-center">
+                    <div class="text-gray-500 text-sm">Kapital</div>
+                    <div class="text-xl font-bold text-green-600">€<span id="funds">250,000</span></div>
+                </div>
+                <div class="text-center">
+                    <div class="text-gray-500 text-sm">Reputation</div>
+                    <div class="flex items-center">
+                        <div class="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
+                            <div class="bg-yellow-500 h-2.5 rounded-full progress-bar" style="width: 65%"></div>
+                        </div>
+                        <span class="text-sm font-medium">65%</span>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-gray-500 text-sm">Mitarbeiter</div>
+                    <div class="text-xl font-bold text-blue-600"><span id="employee-count">8</span></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Hauptspielbereich -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Linke Spalte - Büroansicht -->
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-md p-6">
+                <div class="flex justify-between items-center mb-6 flex-wrap gap-2">
+                    <h2 class="text-xl font-bold text-gray-800">Ihr Startup Büro</h2>
+                    <div class="flex space-x-2">
+                        <button class="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-sm font-medium hover:bg-blue-200 transition" type="button" aria-label="Zoom">
+                            <i class="fas fa-expand mr-1"></i> Zoom
+                        </button>
+                        <button class="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm font-medium hover:bg-gray-200 transition" type="button" aria-label="Einstellungen">
+                            <i class="fas fa-cog mr-1"></i> Einstellungen
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Bürovisualisierung -->
+                <div class="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200" id="office-employees">
+                    <div class="grid grid-cols-4 gap-4">
+                        <!-- Mitarbeiter Arbeitsplätze werden dynamisch aktualisiert -->
+                    </div>
+                </div>
+                
+                <!-- Besprechungsraum -->
+                <div class="mt-6 bg-blue-50 rounded-lg p-4 border border-blue-100">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-sm font-semibold text-blue-800">Besprechungsraum</h3>
+                        <button class="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition" type="button" onclick="startTeamMeeting()">
+                            <i class="fas fa-users mr-1"></i> Besprechung starten
+                        </button>
+                    </div>
+                    <div class="text-xs text-blue-600">Nächste Besprechung in: <span class="font-medium">15 min</span></div>
+                </div>
+                
+                <!-- Aktuelle Projekte -->
+                <h3 class="text-lg font-semibold text-gray-800 mt-8 mb-3">Aktive Projekte</h3>
+                <div class="space-y-3" id="active-projects">
+                    <!-- Projekte werden dynamisch aktualisiert -->
+                </div>
+            </div>
+            
+            <!-- Rechte Spalte - Chat und Benachrichtigungen -->
+            <div class="space-y-6">
+                <!-- Mitarbeiter-Chat -->
+                <section class="bg-white rounded-xl shadow-md p-6" id="chat-container" aria-label="Teamkommunikation">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-gray-800">Teamkommunikation</h2>
+                        <div class="relative">
+                            <button class="text-gray-500 hover:text-gray-700" onclick="toggleChatDropdown()" aria-haspopup="true" aria-expanded="false" aria-controls="chat-dropdown" aria-label="Chat Optionen">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div id="chat-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10" role="menu" aria-hidden="true">
+                                <div class="py-1">
+                                    <button type="button" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="clearChat()" role="menuitem">Chat löschen</button>
+                                    <button type="button" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="toggleMute()" role="menuitem">Benachrichtigungen stummschalten</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat-Header -->
+                    <div class="flex items-center space-x-3 mb-4 p-3 bg-gray-50 rounded-lg" id="chat-header">
+                        <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Team" 
+                             alt="Team Avatar, mehrere Personen, neutraler Stil" 
+                             class="w-10 h-10 rounded-full" />
+                        <div>
+                            <div class="font-medium">Team-Chat</div>
+                            <div class="text-xs text-gray-500">Alle Mitarbeiter</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat-Nachrichten -->
+                    <div class="h-64 overflow-y-auto mb-4 space-y-3 pr-2" id="chat-messages" aria-live="polite" aria-relevant="additions">
+                        <!-- Nachrichten werden dynamisch eingefügt -->
+                    </div>
+                    
+                    <!-- Vorgefertigte Fragen -->
+                    <div class="mb-3 flex flex-wrap gap-2" role="list">
+                        <button type="button" onclick="insertPredefinedQuestion('Wie steht es um den aktuellen Projektfortschritt?')" class="text-xs bg-gray-100 px-3 py-1 rounded hover:bg-gray-200 transition" role="listitem">
+                            <i class="fas fa-project-diagram mr-1"></i> Projektfortschritt
+                        </button>
+                        <button type="button" onclick="insertPredefinedQuestion('Gibt es irgendwelche Blockaden oder Probleme?')" class="text-xs bg-gray-100 px-3 py-1 rounded hover:bg-gray-200 transition" role="listitem">
+                            <i class="fas fa-exclamation-triangle mr-1"></i> Probleme
+                        </button>
+                        <button type="button" onclick="insertPredefinedQuestion('Braucht ihr zusätzliche Ressourcen?')" class="text-xs bg-gray-100 px-3 py-1 rounded hover:bg-gray-200 transition" role="listitem">
+                            <i class="fas fa-tasks mr-1"></i> Ressourcen
+                        </button>
+                        <button type="button" onclick="insertPredefinedQuestion('Wie können wir die Zusammenarbeit verbessern?')" class="text-xs bg-gray-100 px-3 py-1 rounded hover:bg-gray-200 transition" role="listitem">
+                            <i class="fas fa-users mr-1"></i> Zusammenarbeit
+                        </button>
+                    </div>
+                    
+                    <!-- Chat-Eingabe -->
+                    <form onsubmit="event.preventDefault(); sendTeamMessage();" class="flex space-x-2" aria-label="Nachricht senden">
+                        <input type="text" 
+                               id="team-chat-input" 
+                               placeholder="Nachricht eingeben..." 
+                               class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               aria-label="Nachricht eingeben"
+                               autocomplete="off" />
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition" aria-label="Nachricht senden">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </section>
+                
+                <!-- Rollenspiel-Szenario -->
+                <section class="bg-white rounded-xl shadow-md p-6" aria-label="Rollenspiel-Szenario">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-gray-800">Rollenspiel-Szenario</h2>
+                        <button class="text-blue-500 hover:text-blue-700" type="button" onclick="newScenario()" aria-label="Neues Szenario laden">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="bg-indigo-50 rounded-lg p-4 mb-4 roleplay-card">
+                        <div class="roleplay-card-inner">
+                            <h3 class="font-semibold text-indigo-800 mb-2">Investorenmeeting</h3>
+                            <p class="text-sm text-indigo-700 mb-3">Sie haben in 30 Minuten ein Meeting mit potenziellen Investoren. Diese sind an Ihrer Technologie interessiert, aber besorgt über den Marktwettbewerb.</p>
+                            <div class="flex space-x-2 flex-wrap">
+                                <button class="text-xs bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 transition" type="button"
+                                        onclick="showResponseOptions('investor')">
+                                    <i class="fas fa-comment-dots mr-1"></i> Antwort vorbereiten
+                                </button>
+                                <button class="text-xs bg-white text-indigo-600 px-3 py-1 rounded border border-indigo-200 hover:bg-indigo-50 transition" type="button"
+                                        onclick="delayMeeting()">
+                                    <i class="fas fa-clock mr-1"></i> Meeting verschieben
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="response-options" class="hidden bg-white p-3 rounded-lg border border-gray-200 mb-3" role="region" aria-live="polite" aria-atomic="true">
+                        <h4 class="text-sm font-medium mb-2">Wie würden Sie antworten?</h4>
+                        <div class="space-y-2">
+                            <button class="w-full text-left text-sm p-2 bg-gray-50 hover:bg-gray-100 rounded" type="button"
+                                    onclick="selectResponse(1)">
+                                "Unsere Technologie ist patentiert und hat erhebliche Eintrittsbarrieren für Wettbewerber."
+                            </button>
+                            <button class="w-full text-left text-sm p-2 bg-gray-50 hover:bg-gray-100 rounded" type="button"
+                                    onclick="selectResponse(2)">
+                                "Wir konzentrieren uns auf eine Nische, die größere Player übersehen haben."
+                            </button>
+                            <button class="w-full text-left text-sm p-2 bg-gray-50 hover:bg-gray-100 rounded" type="button"
+                                    onclick="selectResponse(3)">
+                                "Lassen Sie mich Ihnen unsere Roadmap zeigen, wie wir der Konkurrenz voraus bleiben."
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Vorgefertigte Fragen für Rollenspiel -->
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <h4 class="text-sm font-medium mb-2">Mögliche Fragen an die Investoren:</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" onclick="insertScenarioQuestion('Welche Renditeerwartungen haben Sie?')" class="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 transition">
+                                Renditeerwartungen
+                            </button>
+                            <button type="button" onclick="insertScenarioQuestion('Wie sehen Ihre typischen Investitionszeiträume aus?')" class="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 transition">
+                                Investitionszeitraum
+                            </button>
+                            <button type="button" onclick="insertScenarioQuestion('Welche Mitwirkungsmöglichkeiten bevorzugen Sie?')" class="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 transition">
+                                Mitwirkung
+                            </button>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Benachrichtigungen -->
+                <section class="bg-white rounded-xl shadow-md p-6" aria-label="Benachrichtigungen">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-gray-800">Benachrichtigungen</h2>
+                        <div class="relative">
+                            <button class="text-gray-500 hover:text-gray-700" type="button" onclick="clearNotifications()" aria-label="Benachrichtigungen löschen">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                            <div id="notification-badge" class="notification-badge hidden" aria-live="polite" aria-atomic="true">0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3" id="notifications-container" role="list" aria-live="polite" aria-relevant="additions">
+                        <!-- Benachrichtigungen werden dynamisch eingefügt -->
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <!-- Mitarbeiter-Chat-Modal -->
+    <div id="employee-chat-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="employee-chat-title">
+        <div class="bg-white rounded-xl w-full max-w-md mx-4 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b">
+                <div class="flex items-center space-x-3">
+                    <img id="chat-employee-avatar" src="" alt="Mitarbeiter Avatar" class="w-10 h-10 rounded-full" />
+                    <div>
+                        <div class="font-medium" id="chat-employee-name"></div>
+                        <div class="text-xs text-gray-500" id="chat-employee-role"></div>
+                    </div>
+                </div>
+                <button onclick="closeEmployeeChat()" class="text-gray-500 hover:text-gray-700" aria-label="Chat schließen">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="h-64 overflow-y-auto p-4 space-y-3 flex-1" id="employee-chat-messages" aria-live="polite" aria-relevant="additions" tabindex="0">
+                <!-- Nachrichten werden dynamisch eingefügt -->
+            </div>
+            
+            <!-- Vorgefertigte Fragen für Mitarbeiter -->
+            <div class="px-4 pb-2">
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" onclick="askEmployeeQuestion('Wie läuft deine aktuelle Arbeit?')" class="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 transition">
+                        <i class="fas fa-tasks mr-1"></i> Arbeitsstatus
+                    </button>
+                    <button type="button" onclick="askEmployeeQuestion('Brauchst du Unterstützung bei etwas?')" class="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 transition">
+                        <i class="fas fa-hands-helping mr-1"></i> Unterstützung
+                    </button>
+                    <button type="button" onclick="askEmployeeQuestion('Wie können wir deine Produktivität verbessern?')" class="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 transition">
+                        <i class="fas fa-chart-line mr-1"></i> Produktivität
+                    </button>
+                </div>
+            </div>
+            
+            <form onsubmit="event.preventDefault(); sendEmployeeMessage();" class="p-4 border-t flex flex-col gap-2">
+                <div class="flex space-x-2">
+                    <input type="text" 
+                           id="employee-chat-input" 
+                           placeholder="Nachricht eingeben..." 
+                           class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           aria-label="Nachricht eingeben"
+                           autocomplete="off" />
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition" aria-label="Nachricht senden">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="flex space-x-2">
+                    <button type="button" class="text-xs bg-gray-100 px-3 py-1 rounded hover:bg-gray-200 transition flex items-center" onclick="suggestTask()">
+                        <i class="fas fa-tasks mr-1"></i> Aufgabe zuweisen
+                    </button>
+                    <button type="button" class="text-xs bg-gray-100 px-3 py-1 rounded hover:bg-gray-200 transition flex items-center" onclick="requestFeedback()">
+                        <i class="fas fa-comment-alt mr-1"></i> Feedback anfordern
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Einstellungs-Modal -->
+    <div id="hiring-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="hiring-modal-title">
+        <div class="bg-white rounded-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="text-lg font-medium" id="hiring-modal-title">Neuen Mitarbeiter einstellen</h3>
+                <button onclick="closeHiringModal()" class="text-gray-500 hover:text-gray-700" aria-label="Einstellungsmodal schließen">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition" tabindex="0"
+                         onclick="selectCandidate('Technical')" onkeypress="if(event.key==='Enter'){selectCandidate('Technical')}">
+                        <div class="flex justify-center mb-3">
+                            <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Tech1" 
+                                 alt="Technischer Kandidat, männlich, neutraler Gesichtsausdruck" 
+                                 class="w-16 h-16 rounded-full" />
+                        </div>
+                        <div class="text-center">
+                            <div class="font-medium">Technische Rolle</div>
+                            <div class="text-sm text-gray-500">Entwickler, Ingenieur, etc.</div>
+                            <div class="mt-2 text-sm">
+                                <span class="font-medium">Gehalt:</span> €85k-€120k
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition" tabindex="0"
+                         onclick="selectCandidate('Creative')" onkeypress="if(event.key==='Enter'){selectCandidate('Creative')}">
+                        <div class="flex justify-center mb-3">
+                            <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Creative1" 
+                                 alt="Kreativer Kandidat, weiblich, neutraler Gesichtsausdruck" 
+                                 class="w-16 h-16 rounded-full" />
+                        </div>
+                        <div class="text-center">
+                            <div class="font-medium">Kreative Rolle</div>
+                            <div class="text-sm text-gray-500">Designer, Autor, etc.</div>
+                            <div class="mt-2 text-sm">
+                                <span class="font-medium">Gehalt:</span> €65k-€95k
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition" tabindex="0"
+                         onclick="selectCandidate('Business')" onkeypress="if(event.key==='Enter'){selectCandidate('Business')}">
+                        <div class="flex justify-center mb-3">
+                            <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Business1" 
+                                 alt="Business-Kandidat, männlich, neutraler Gesichtsausdruck" 
+                                 class="w-16 h-16 rounded-full" />
+                        </div>
+                        <div class="text-center">
+                            <div class="font-medium">Business-Rolle</div>
+                            <div class="text-sm text-gray-500">Marketing, Vertrieb, etc.</div>
+                            <div class="mt-2 text-sm">
+                                <span class="font-medium">Gehalt:</span> €75k-€110k
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="candidate-details" class="hidden mt-6 bg-gray-50 p-4 rounded-lg" aria-live="polite" aria-atomic="true">
+                    <div class="flex items-start space-x-4">
+                        <img id="selected-candidate-avatar" src="" alt="Ausgewählter Kandidat Avatar" class="w-20 h-20 rounded-full" />
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-medium" id="selected-candidate-name"></h4>
+                                    <div class="text-sm text-gray-500" id="selected-candidate-role"></div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-medium" id="selected-candidate-salary"></div>
+                                    <div class="text-xs text-gray-500">Jahresgehalt</div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <div class="text-sm font-medium mb-1">Fähigkeiten</div>
+                                <div class="flex flex-wrap gap-2" id="selected-candidate-skills">
+                                    <!-- Fähigkeiten werden hier eingefügt -->
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 flex justify-end space-x-3">
+                                <button type="button" onclick="closeHiringModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">
+                                    Abbrechen
+                                </button>
+                                <button type="button" onclick="hireCandidate()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                    Mitarbeiter einstellen
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projekt-Details-Modal -->
+    <div id="project-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="project-modal-title">
+        <div class="bg-white rounded-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="text-lg font-medium" id="project-modal-title">Projektdetails</h3>
+                <button onclick="closeProjectModal()" class="text-gray-500 hover:text-gray-700" aria-label="Projektmodal schließen">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-4">
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm font-medium">Fortschritt</span>
+                        <span class="text-sm" id="project-progress-text">45%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-green-500 h-2.5 rounded-full" id="project-progress-bar" style="width: 45%"></div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <div class="text-sm font-medium mb-2">Teammitglieder</div>
+                        <div class="space-y-2" id="project-team-members" role="list">
+                            <!-- Teammitglieder werden hier eingefügt -->
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="text-sm font-medium mb-2">Meilensteine</div>
+                        <div class="space-y-3" id="project-milestones" role="list">
+                            <!-- Meilensteine werden hier eingefügt -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="text-sm font-medium mb-2">Projektbeschreibung</div>
+                    <p class="text-sm text-gray-700" id="project-description">
+                        <!-- Beschreibung wird hier eingefügt -->
+                    </p>
+                </div>
+                
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" onclick="reallocateResources()" class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+                        <i class="fas fa-users-cog mr-2"></i> Ressourcen umverteilen
+                    </button>
+                    <button type="button" onclick="updateProjectPriority()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-flag mr-2"></i> Priorität aktualisieren
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Besprechungs-Modal -->
+    <div id="meeting-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="meeting-modal-title">
+        <div class="bg-white rounded-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="text-lg font-medium" id="meeting-modal-title">Teambesprechung</h3>
+                <button onclick="closeMeetingModal()" class="text-gray-500 hover:text-gray-700" aria-label="Besprechungsmodal schließen">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form class="p-4" onsubmit="event.preventDefault(); startMeeting();">
+                <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-6">
+                    <div class="flex-1">
+                        <label for="meeting-topic" class="block text-sm font-medium mb-1">Besprechungsthema</label>
+                        <input type="text" id="meeting-topic" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Besprechungsthema eingeben" required />
+                    </div>
+                    <div class="w-32">
+                        <label for="meeting-duration" class="block text-sm font-medium mb-1">Dauer</label>
+                        <select id="meeting-duration" class="w-full border border-gray-300 rounded-lg px-3 py-2" required>
+                            <option>15 min</option>
+                            <option>30 min</option>
+                            <option selected>45 min</option>
+                            <option>60 min</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-2">Agenda</label>
+                    <div class="space-y-2" id="meeting-agenda">
+                        <div class="flex items-center">
+                            <input type="checkbox" class="mr-2" checked />
+                            <span>Projektupdates</span>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" class="mr-2" checked />
+                            <span>Roadmap-Review</span>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" class="mr-2" />
+                            <span>Budgetdiskussion</span>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" class="mr-2" />
+                            <span>Team-Feedback</span>
+                        </div>
+                    </div>
+                    <button type="button" onclick="addAgendaItem()" class="mt-2 text-xs bg-gray-100 px-3 py-1 rounded hover:bg-gray-200 transition">
+                        <i class="fas fa-plus mr-1"></i> Agenda-Punkt hinzufügen
+                    </button>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-2">Teilnehmer</label>
+                    <div class="flex flex-wrap gap-2" id="meeting-participants" aria-label="Teilnehmerliste">
+                        <div class="flex items-center bg-gray-100 px-3 py-1 rounded-full">
+                            <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Emma" 
+                                 alt="Emma Avatar, weiblich, neutraler Gesichtsausdruck" 
+                                 class="w-5 h-5 rounded-full mr-1" />
+                            <span class="text-sm">Emma</span>
+                        </div>
+                        <div class="flex items-center bg-gray-100 px-3 py-1 rounded-full">
+                            <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=David" 
+                                 alt="David Avatar, männlich, neutraler Gesichtsausdruck" 
+                                 class="w-5 h-5 rounded-full mr-1" />
+                            <span class="text-sm">David</span>
+                        </div>
+                        <div class="flex items-center bg-gray-100 px-3 py-1 rounded-full">
+                            <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Sarah" 
+                                 alt="Sarah Avatar, weiblich, neutraler Gesichtsausdruck" 
+                                 class="w-5 h-5 rounded-full mr-1" />
+                            <span class="text-sm">Sarah</span>
+                        </div>
+                        <div class="flex items-center bg-gray-100 px-3 py-1 rounded-full">
+                            <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Michael" 
+                                 alt="Michael Avatar, männlich, neutraler Gesichtsausdruck" 
+                                 class="w-5 h-5 rounded-full mr-1" />
+                            <span class="text-sm">Michael</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeMeetingModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">
+                        Abbrechen
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        Besprechung starten
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Besprechungs-Zusammenfassungs-Modal -->
+    <div id="meeting-summary-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="meeting-summary-title">
+        <div class="bg-white rounded-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="text-lg font-medium" id="meeting-summary-title">Besprechungszusammenfassung</h3>
+                <button onclick="closeMeetingSummary()" class="text-gray-500 hover:text-gray-700" aria-label="Zusammenfassung schließen">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-4">
+                <div class="mb-4">
+                    <div class="text-sm font-medium mb-1">Thema:</div>
+                    <div id="summary-topic"></div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="text-sm font-medium mb-1">Dauer:</div>
+                    <div id="summary-duration"></div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="text-sm font-medium mb-1">Teilnehmer:</div>
+                    <div class="flex flex-wrap gap-2" id="summary-participants" aria-label="Teilnehmer der Besprechung">
+                        <!-- Teilnehmer werden hier eingefügt -->
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="text-sm font-medium mb-1">Zusammenfassung:</div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p id="summary-content">Die Besprechung war produktiv. Alle Projekte sind im Plan, außer der Mobile App, die eine Woche Verzögerung hat. Das Marketing-Team ist bereit für die Kampagnenstart nächste Woche. Budgetanpassungen wurden besprochen.</p>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="text-sm font-medium mb-1">Aktionspunkte:</div>
+                    <ul class="list-disc pl-5 space-y-1" id="summary-action-items">
+                        <li>David wird die API-Probleme bis Freitag lösen</li>
+                        <li>Emma wird die Marketingmaterialien finalisieren</li>
+                        <li>Michael wird das aktualisierte Budget vorlegen</li>
+                    </ul>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button onclick="closeMeetingSummary()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        Fertig
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // Spielstatus
+    const gameState = {
+        funds: 250000,
+        reputation: 65,
+        employees: [
+            { name: "Emma", role: "Marketing Spezialist", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Emma", productivity: 80 },
+            { name: "David", role: "Lead Entwickler", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=David", productivity: 60 },
+            { name: "Sarah", role: "UX Designer", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Sarah", productivity: 75 },
+            { name: "Michael", role: "Finanzmanager", avatar: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Michael", productivity: 90 }
+        ],
+        projects: [
+            { 
+                name: "Website-Redesign", 
+                description: "Komplette Überarbeitung unserer Unternehmenswebsite mit modernem Design, verbesserter Navigation und Mobile-Responsiveness.", 
+                progress: 45, 
+                team: ["Emma", "Sarah"], 
+                milestones: [
+                    { name: "Design-Mockups", completed: true },
+                    { name: "Frontend-Entwicklung", completed: false },
+                    { name: "Content-Migration", completed: false },
+                    { name: "Testing & QA", completed: false }
+                ]
+            },
+            { 
+                name: "Mobile App Entwicklung", 
+                description: "Entwicklung unserer Flaggschiff-Mobile-App für iOS und Android Plattformen.", 
+                progress: 22, 
+                team: ["David", "Sarah"], 
+                milestones: [
+                    { name: "API-Integration", completed: false },
+                    { name: "Kernfunktionen", completed: false },
+                    { name: "Beta-Testing", completed: false }
+                ]
+            }
+        ],
+        playerName: "Alex Mercer",
+        currentChatEmployee: null,
+        selectedCandidate: null,
+        meetingInProgress: false,
+        notifications: [
+            { title: "Server-Wartung", content: "Unser Entwicklungsserver wird heute Abend um 22 Uhr für Wartungsarbeiten heruntergefahren.", type: "warning" },
+            { title: "Team-Mittagessen", content: "Monatliches Team-Mittagessen morgen um 12:30 Uhr.", type: "info" },
+            { title: "Aufgabe abgeschlossen", content: "Emma hat das Design der Social-Media-Kampagne abgeschlossen.", type: "success" }
+        ],
+        chatMuted: false,
+        newNotifications: 3
+    };
+
+    // Währung formatieren
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(amount);
+    }
+
+    // UI mit Spielstatus aktualisieren
+    function updateUI() {
+        document.getElementById('funds').textContent = gameState.funds.toLocaleString('de-DE');
+        document.getElementById('employee-count').textContent = gameState.employees.length;
+        document.getElementById('player-name').textContent = gameState.playerName;
+
+        // Benachrichtigungs-Badge aktualisieren
+        const badge = document.getElementById('notification-badge');
+        if (gameState.newNotifications > 0) {
+            badge.classList.remove('hidden');
+            badge.textContent = gameState.newNotifications;
+        } else {
+            badge.classList.add('hidden');
+        }
+
+        updateOfficeView();
+        updateActiveProjects();
+        updateNotifications();
+    }
+
+    // Spielernamen bearbeiten
+    function editPlayerName() {
+        const newName = prompt("Geben Sie Ihren Namen ein:", gameState.playerName);
+        if (newName && newName.trim() !== "") {
+            gameState.playerName = newName.trim();
+            updateUI();
+            addNotification("Profil aktualisiert", "Ihr Name wurde geändert.", "info");
+        }
+    }
+
+    // Mitarbeiter-Chat öffnen
+    function openEmployeeChat(name, role) {
+        gameState.currentChatEmployee = name;
+        document.getElementById('chat-employee-name').textContent = name;
+        document.getElementById('chat-employee-role').textContent = role;
+
+        const employee = gameState.employees.find(e => e.name === name);
+        if(employee) {
+            document.getElementById('chat-employee-avatar').src = employee.avatar;
+            document.getElementById('chat-employee-avatar').alt = `${employee.name} Avatar, Rolle: ${employee.role}`;
+        } else {
+            document.getElementById('chat-employee-avatar').src = "";
+            document.getElementById('chat-employee-avatar').alt = "Mitarbeiter Avatar";
+        }
+
+        // Vorherige Nachrichten löschen
+        const chatMessages = document.getElementById('employee-chat-messages');
+        chatMessages.innerHTML = '';
+
+        // Beispielnachrichten hinzufügen
+        addEmployeeMessage(name, "Hallo! Worüber möchten Sie sprechen?");
+
+        // Modal anzeigen
+        document.getElementById('employee-chat-modal').classList.remove('hidden');
+        document.getElementById('employee-chat-input').focus();
+    }
+
+    // Mitarbeiter-Chat schließen
+    function closeEmployeeChat() {
+        document.getElementById('employee-chat-modal').classList.add('hidden');
+        gameState.currentChatEmployee = null;
+    }
+
+    // Nachricht an Mitarbeiter senden
+    function sendEmployeeMessage() {
+        const input = document.getElementById('employee-chat-input');
+        const message = input.value.trim();
+
+        if (message !== "") {
+            addEmployeeMessage('You', message);
+            input.value = '';
+
+            // Antwort nach einer Verzögerung simulieren
+            setTimeout(() => {
+                const responses = [
+                    "Ich kümmere mich sofort darum.",
+                    "Das ist ein interessanter Punkt. Lass mich darüber nachdenken.",
+                    "Ich brauche vielleicht Hilfe dabei. Können wir das in unserer nächsten Besprechung besprechen?",
+                    "Verstanden. Ich halte Sie über meinen Fortschritt auf dem Laufenden.",
+                    "Das passt zu unseren aktuellen Prioritäten. Ich werde es priorisieren."
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                addEmployeeMessage(gameState.currentChatEmployee, randomResponse);
+            }, 1000 + Math.random() * 2000);
+        }
+    }
+
+    // Nachricht an Team senden
+    function sendTeamMessage() {
+        const input = document.getElementById('team-chat-input');
+        const message = input.value.trim();
+
+        if (message !== "") {
+            addTeamMessage('You', message);
+            input.value = '';
+
+            // Antworten verschiedener Teammitglieder simulieren
+            setTimeout(() => {
+                const randomEmployee = gameState.employees[Math.floor(Math.random() * gameState.employees.length)];
+                const responses = [
+                    "Ich arbeite gerade daran. Ich schätze, ich brauche noch etwa 2 Tage.",
+                    "Könnten wir das in der nächsten Besprechung besprechen?",
+                    "Ich habe einige Fragen dazu. Können wir kurz sprechen?",
+                    "Ich bin mir nicht sicher, ob wir die Ressourcen dafür haben.",
+                    "Das klingt nach einer guten Idee! Ich fange gleich damit an."
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                addTeamMessage(randomEmployee.name, randomResponse);
+            }, 1000 + Math.random() * 2000);
+        }
+    }
+
+    // Nachricht zum Team-Chat hinzufügen
+    function addTeamMessage(sender, message) {
+        const chatMessages = document.getElementById('chat-messages');
+        const isPlayer = sender === 'You';
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `flex items-start space-x-2 ${isPlayer ? 'justify-end' : ''}`;
+
+        if (!isPlayer) {
+            const employee = gameState.employees.find(e => e.name === sender);
+            if(!employee) return;
+            messageDiv.innerHTML = `
+                <img src="${employee.avatar}" alt="${sender} Avatar, Rolle: ${employee.role}" class="w-8 h-8 rounded-full mt-1" />
+                <div class="bg-gray-100 p-3 rounded-lg max-w-xs">
+                    <div class="text-xs font-medium text-gray-700">${sender} (${employee.role})</div>
+                    <p class="text-sm">${message}</p>
+                    <div class="text-xs text-gray-500 text-right mt-1">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                </div>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                <div class="bg-blue-100 p-3 rounded-lg max-w-xs">
+                    <div class="text-xs font-medium text-blue-700">Sie (CEO)</div>
+                    <p class="text-sm">${message}</p>
+                    <div class="text-xs text-gray-500 text-right mt-1">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                </div>
+                <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Player" alt="Sie Avatar, männlich, neutraler Gesichtsausdruck" class="w-8 h-8 rounded-full mt-1" />
+            `;
+        }
+
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Nachricht zum Mitarbeiter-Chat hinzufügen
+    function addEmployeeMessage(sender, message) {
+        const chatMessages = document.getElementById('employee-chat-messages');
+        const isPlayer = sender === 'You';
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `flex items-start space-x-2 ${isPlayer ? 'justify-end' : ''}`;
+
+        if (!isPlayer) {
+            const employee = gameState.employees.find(e => e.name === sender);
+            if(!employee) return;
+            messageDiv.innerHTML = `
+                <img src="${employee.avatar}" alt="${sender} Avatar, Rolle: ${employee.role}" class="w-8 h-8 rounded-full mt-1" />
+                <div class="bg-gray-100 p-3 rounded-lg max-w-xs">
+                    <div class="text-xs font-medium text-gray-700">${sender} (${employee.role})</div>
+                    <p class="text-sm">${message}</p>
+                    <div class="text-xs text-gray-500 text-right mt-1">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                </div>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                <div class="bg-blue-100 p-3 rounded-lg max-w-xs">
+                    <div class="text-xs font-medium text-blue-700">Sie (CEO)</div>
+                    <p class="text-sm">${message}</p>
+                    <div class="text-xs text-gray-500 text-right mt-1">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                </div>
+                <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Player" alt="Sie Avatar, männlich, neutraler Gesichtsausdruck" class="w-8 h-8 rounded-full mt-1" />
+            `;
+        }
+
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Aufgabe vorschlagen
+    function suggestTask() {
+        const tasks = [
+            "Können Sie einen Bericht über unsere Marketing-Performance im Q2 vorbereiten?",
+            "Ich möchte, dass Sie Wettbewerber in unserem Bereich recherchieren.",
+            "Bitte erstellen Sie einen Vorschlag für die neue Funktion, die wir besprochen haben.",
+            "Könnten Sie die neuesten Analysen überprüfen und Trends identifizieren?",
+            "Lassen Sie uns eine Brainstorming-Session für die neue Kampagne planen."
+        ];
+        const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
+
+        document.getElementById('employee-chat-input').value = randomTask;
+        document.getElementById('employee-chat-input').focus();
+    }
+
+    // Feedback anfordern
+    function requestFeedback() {
+        const feedbackRequests = [
+            "Was ist Ihre ehrliche Meinung zu unserer aktuellen Strategie?",
+            "Haben Sie Bedenken bezüglich unserer Teamdynamik?",
+            "Wie kann ich Sie in Ihrer Rolle besser unterstützen?",
+            "Was ist eine Sache, die wir als Unternehmen verbessern könnten?",
+            "Glauben Sie, dass wir die richtigen Projekte priorisieren?"
+        ];
+        const randomRequest = feedbackRequests[Math.floor(Math.random() * feedbackRequests.length)];
+
+        document.getElementById('employee-chat-input').value = randomRequest;
+        document.getElementById('employee-chat-input').focus();
+    }
+
+    // Vorgefertigte Frage einfügen (Team-Chat)
+    function insertPredefinedQuestion(question) {
+        const input = document.getElementById('team-chat-input');
+        input.value = question;
+        input.focus();
+    }
+
+    // Vorgefertigte Frage einfügen (Rollenspiel)
+    function insertScenarioQuestion(question) {
+        alert(`Frage an Investoren: "${question}" wurde vorbereitet.`);
+    }
+
+    // Mitarbeiterfrage stellen
+    function askEmployeeQuestion(question) {
+        const input = document.getElementById('employee-chat-input');
+        input.value = question;
+        input.focus();
+    }
+
+    // Einstellungsmodal öffnen
+    function openHiringModal() {
+        document.getElementById('hiring-modal').classList.remove('hidden');
+        document.getElementById('candidate-details').classList.add('hidden');
+    }
+
+    // Einstellungsmodal schließen
+    function closeHiringModal() {
+        document.getElementById('hiring-modal').classList.add('hidden');
+    }
+
+    // Kandidatentyp auswählen
+    function selectCandidate(type) {
+        const roleTypes = {
+            'Technical': ['Senior Entwickler', 'DevOps Ingenieur', 'QA Spezialist', 'Data Scientist'],
+            'Creative': ['UX Designer', 'Grafikdesigner', 'Content Autor', 'Video Producer'],
+            'Business': ['Marketing Manager', 'Vertriebsleiter', 'HR Spezialist', 'Operations Manager']
+        };
+
+        const firstNames = ['Jordan', 'Taylor', 'Casey', 'Morgan', 'Riley', 'Jamie', 'Quinn', 'Avery'];
+        const lastNames = ['Müller', 'Schmidt', 'Schneider', 'Fischer', 'Weber', 'Meyer', 'Wagner', 'Becker'];
+
+        const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+        const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+        const fullName = `${firstName} ${lastName}`;
+        const role = roleTypes[type][Math.floor(Math.random() * roleTypes[type].length)];
+
+        const salaryRanges = {
+            'Technical': [85000, 120000],
+            'Creative': [65000, 95000],
+            'Business': [75000, 110000]
+        };
+        const salary = Math.floor(Math.random() * (salaryRanges[type][1] - salaryRanges[type][0] + 1)) + salaryRanges[type][0];
+
+        const skills = {
+            'Technical': ['JavaScript', 'Python', 'Cloud Architektur', 'Datenbankdesign', 'API Entwicklung'],
+            'Creative': ['UI/UX Design', 'Branding', 'Illustration', 'Videobearbeitung', 'Copywriting'],
+            'Business': ['Marktanalyse', 'Verkaufsstrategie', 'Teamführung', 'Budgetierung', 'Verhandlung']
+        };
+
+        gameState.selectedCandidate = {
+            name: fullName,
+            role: role,
+            type: type,
+            salary: salary,
+            skills: skills[type].sort(() => 0.5 - Math.random()).slice(0, 3),
+            avatar: `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(fullName)}`
+        };
+
+        // UI aktualisieren
+        document.getElementById('selected-candidate-name').textContent = fullName;
+        document.getElementById('selected-candidate-role').textContent = role;
+        document.getElementById('selected-candidate-salary').textContent = formatCurrency(salary);
+        document.getElementById('selected-candidate-avatar').src = gameState.selectedCandidate.avatar;
+        document.getElementById('selected-candidate-avatar').alt = `${fullName} Avatar, Rolle: ${role}`;
+
+        const skillsContainer = document.getElementById('selected-candidate-skills');
+        skillsContainer.innerHTML = '';
+
+        gameState.selectedCandidate.skills.forEach(skill => {
+            const skillDiv = document.createElement('div');
+            skillDiv.className = 'text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded';
+            skillDiv.textContent = skill;
+            skillsContainer.appendChild(skillDiv);
+        });
+
+        document.getElementById('candidate-details').classList.remove('hidden');
+    }
+
+    // Kandidaten einstellen
+    function hireCandidate() {
+        if (gameState.selectedCandidate && gameState.funds >= gameState.selectedCandidate.salary / 12) {
+            // Zu Mitarbeitern hinzufügen
+            gameState.employees.push({
+                name: gameState.selectedCandidate.name.split(' ')[0], // Nur Vorname verwenden
+                role: gameState.selectedCandidate.role,
+                avatar: gameState.selectedCandidate.avatar,
+                productivity: Math.floor(Math.random() * 30) + 60 // 60-90%
+            });
+
+            // Erstes Monatsgehalt abziehen
+            gameState.funds -= Math.floor(gameState.selectedCandidate.salary / 12);
+
+            // UI aktualisieren
+            updateUI();
+            closeHiringModal();
+
+            // Benachrichtigung anzeigen
+            addNotification(`Neue Einstellung`, `${gameState.selectedCandidate.name} wurde als ${gameState.selectedCandidate.role} eingestellt.`, 'success');
+        } else {
+            alert("Sie haben nicht genug Geld, um diesen Mitarbeiter einzustellen.");
+        }
+    }
+
+    // Büroansicht aktualisieren
+    function updateOfficeView() {
+        const officeContainer = document.getElementById('office-employees');
+        const gridContainer = officeContainer.querySelector('.grid');
+
+        // Vorherige Mitarbeiter löschen (außer dem "Einstellen"-Button)
+        gridContainer.innerHTML = '';
+
+        // Alle Mitarbeiter neu rendern
+        gameState.employees.forEach(employee => {
+            const employeeDiv = document.createElement('div');
+            employeeDiv.className = 'bg-white p-3 rounded-lg shadow-sm border border-gray-100 text-center';
+            employeeDiv.innerHTML = `
+                <img src="${employee.avatar}" 
+                     alt="${employee.name} Avatar, Rolle: ${employee.role}" 
+                     class="w-12 h-12 mx-auto rounded-full mb-2 avatar-hover cursor-pointer"
+                     onclick="openEmployeeChat('${employee.name}', '${employee.role}')"
+                     tabindex="0"
+                     onkeypress="if(event.key==='Enter'){openEmployeeChat('${employee.name}', '${employee.role}')}">
+                <div class="text-xs font-medium">${employee.name}</div>
+                <div class="text-xs text-gray-500">${employee.role.split(' ')[0]}</div>
+                <div class="mt-1">
+                    <div class="w-full bg-gray-200 rounded-full h-1">
+                        <div class="bg-green-500 h-1 rounded-full" style="width: ${employee.productivity}%"></div>
+                    </div>
+                </div>
+            `;
+            gridContainer.appendChild(employeeDiv);
+        });
+
+        // "Mitarbeiter einstellen"-Button wieder hinzufügen
+        const hireButton = document.createElement('div');
+        hireButton.className = 'bg-gray-100 p-3 rounded-lg shadow-sm border border-dashed border-gray-300 text-center cursor-pointer hover:bg-gray-50 transition';
+        hireButton.setAttribute('onclick', 'openHiringModal()');
+        hireButton.setAttribute('tabindex', '0');
+        hireButton.setAttribute('role', 'button');
+        hireButton.setAttribute('aria-label', 'Mitarbeiter einstellen');
+        hireButton.setAttribute('onkeypress', "if(event.key==='Enter'){openHiringModal()}");
+        hireButton.innerHTML = `
+            <div class="w-12 h-12 mx-auto rounded-full mb-2 bg-gray-200 flex items-center justify-center">
+                <i class="fas fa-plus text-gray-400"></i>
+            </div>
+            <div class="text-xs font-medium text-gray-500">Mitarbeiter einstellen</div>
+        `;
+        gridContainer.appendChild(hireButton);
+    }
+
+    // Aktive Projekte aktualisieren
+    function updateActiveProjects() {
+        const container = document.getElementById('active-projects');
+        container.innerHTML = '';
+
+        gameState.projects.forEach(project => {
+            const projectDiv = document.createElement('div');
+            const borderColor = project.name === "Website-Redesign" ? 'border-green-500' : 'border-blue-500';
+            projectDiv.className = `bg-white p-4 rounded-lg shadow-sm border-l-4 flex justify-between items-center ${borderColor}`;
+            projectDiv.innerHTML = `
+                <div>
+                    <div class="font-medium">${project.name}</div>
+                    <div class="text-sm text-gray-500">${project.team.length > 0 ? project.team.map(name => name).join(', ') : 'Kein Team'}</div>
+                    <div class="mt-1 w-full bg-gray-200 rounded-full h-1.5">
+                        <div class="bg-green-500 h-1.5 rounded-full" style="width: ${project.progress}%"></div>
+                    </div>
+                </div>
+                <button class="text-sm bg-gray-100 px-3 py-1 rounded hover:bg-gray-200 transition" type="button"
+                        onclick="openProjectDetails('${project.name}')">
+                    Details
+                </button>
+            `;
+            container.appendChild(projectDiv);
+        });
+    }
+
+    // Projektdetails öffnen
+    function openProjectDetails(projectName) {
+        const project = gameState.projects.find(p => p.name === projectName);
+        if (!project) return;
+
+        document.getElementById('project-modal-title').textContent = project.name;
+        document.getElementById('project-progress-text').textContent = `${project.progress}%`;
+        document.getElementById('project-progress-bar').style.width = `${project.progress}%`;
+        document.getElementById('project-description').textContent = project.description;
+
+        // Teammitglieder aktualisieren
+        const teamMembersContainer = document.getElementById('project-team-members');
+        teamMembersContainer.innerHTML = '';
+
+        project.team.forEach(memberName => {
+            const member = gameState.employees.find(e => e.name === memberName);
+            if (member) {
+                const memberDiv = document.createElement('div');
+                memberDiv.className = 'flex items-center space-x-2';
+                memberDiv.innerHTML = `
+                    <img src="${member.avatar}" alt="${member.name} Avatar, Rolle: ${member.role}" class="w-8 h-8 rounded-full" />
+                    <div>
+                        <div class="text-sm">${member.name}</div>
+                        <div class="text-xs text-gray-500">${member.role}</div>
+                    </div>
+                `;
+                teamMembersContainer.appendChild(memberDiv);
+            }
+        });
+
+        // Meilensteine aktualisieren
+        const milestonesContainer = document.getElementById('project-milestones');
+        milestonesContainer.innerHTML = '';
+
+        project.milestones.forEach(milestone => {
+            const milestoneDiv = document.createElement('div');
+            milestoneDiv.className = 'flex items-center';
+            milestoneDiv.innerHTML = `
+                <div class="mr-3">
+                    ${milestone.completed ? 
+                      '<i class="fas fa-check-circle text-green-500"></i>' : 
+                      '<div class="w-4 h-4 border-2 border-gray-300 rounded-full"></div>'}
+                </div>
+                <div class="text-sm ${milestone.completed ? 'text-gray-500 line-through' : 'text-gray-700'}">
+                    ${milestone.name}
+                </div>
+            `;
+            milestonesContainer.appendChild(milestoneDiv);
+        });
+
+        // Modal anzeigen
+        document.getElementById('project-modal').classList.remove('hidden');
+    }
+
+    // Projektmodal schließen
+    function closeProjectModal() {
+        document.getElementById('project-modal').classList.add('hidden');
+    }
+
+    // Ressourcen umverteilen
+    function reallocateResources() {
+        alert("Mit dieser Funktion könnten Sie Teammitglieder zwischen Projekten verschieben, basierend auf Prioritäten.");
+    }
+
+    // Projektpriorität aktualisieren
+    function updateProjectPriority() {
+        alert("Mit dieser Funktion könnten Sie die Wichtigkeit dieses Projekts ändern.");
+    }
+
+    // Teambesprechung starten
+    function startTeamMeeting() {
+        document.getElementById('meeting-modal').classList.remove('hidden');
+        document.getElementById('meeting-topic').focus();
+    }
+
+    // Besprechungsmodal schließen
+    function closeMeetingModal() {
+        document.getElementById('meeting-modal').classList.add('hidden');
+    }
+
+    // Agenda-Punkt hinzufügen
+    function addAgendaItem() {
+        const newItem = prompt("Geben Sie einen neuen Agenda-Punkt ein:");
+        if (newItem && newItem.trim() !== "") {
+            const agendaContainer = document.getElementById('meeting-agenda');
+            const newItemDiv = document.createElement('div');
+            newItemDiv.className = 'flex items-center';
+            newItemDiv.innerHTML = `
+                <input type="checkbox" class="mr-2" checked />
+                <span>${newItem.trim()}</span>
+            `;
+            agendaContainer.appendChild(newItemDiv);
+        }
+    }
+
+    // Besprechung tatsächlich starten
+    function startMeeting() {
+        const topic = document.getElementById('meeting-topic').value || "Team-Update";
+        const duration = document.getElementById('meeting-duration').value;
+
+        closeMeetingModal();
+
+        // Besprechungszusammenfassung vorbereiten
+        document.getElementById('meeting-summary-title').textContent = `Zusammenfassung: ${topic}`;
+        document.getElementById('summary-topic').textContent = topic;
+        document.getElementById('summary-duration').textContent = duration;
+
+        // Teilnehmerliste aktualisieren
+        const participantsContainer = document.getElementById('summary-participants');
+        participantsContainer.innerHTML = '';
+
+        gameState.employees.forEach(employee => {
+            const participantDiv = document.createElement('div');
+            participantDiv.className = 'flex items-center bg-gray-100 px-3 py-1 rounded-full';
+            participantDiv.innerHTML = `
+                <img src="${employee.avatar}" alt="${employee.name} Avatar, Rolle: ${employee.role}" class="w-5 h-5 rounded-full mr-1" />
+                <span class="text-sm">${employee.name}</span>
+            `;
+            participantsContainer.appendChild(participantDiv);
+        });
+
+        // Zusammenfassung anzeigen
+        document.getElementById('meeting-summary-modal').classList.remove('hidden');
+
+        // Benachrichtigung hinzufügen
+        addNotification("Besprechung gestartet", `Die Besprechung "${topic}" hat begonnen.`, 'info');
+    }
+
+    // Besprechungszusammenfassung schließen
+    function closeMeetingSummary() {
+        document.getElementById('meeting-summary-modal').classList.add('hidden');
+    }
+
+    // Besprechung verschieben
+    function delayMeeting() {
+        alert("Besprechung um 30 Minuten verschoben. Ihr Team wurde benachrichtigt.");
+    }
+
+    // Chat-Dropdown umschalten
+    function toggleChatDropdown() {
+        const dropdown = document.getElementById('chat-dropdown');
+        dropdown.classList.toggle('hidden');
+        const expanded = dropdown.classList.contains('hidden') ? 'false' : 'true';
+        document.querySelector('[aria-haspopup="true"]').setAttribute('aria-expanded', expanded);
+    }
+
+    // Chat löschen
+    function clearChat() {
+        if (confirm("Möchten Sie wirklich den gesamten Chatverlauf löschen?")) {
+            document.getElementById('chat-messages').innerHTML = '';
+            toggleChatDropdown();
+        }
+    }
+
+    // Benachrichtigungen stummschalten
+    function toggleMute() {
+        gameState.chatMuted = !gameState.chatMuted;
+        toggleChatDropdown();
+        alert(`Benachrichtigungen sind jetzt ${gameState.chatMuted ? 'stummgeschaltet' : 'aktiviert'}.`);
+    }
+
+    // Benachrichtigungen löschen
+    function clearNotifications() {
+        if(confirm("Möchten Sie wirklich alle Benachrichtigungen löschen?")) {
+            document.getElementById('notifications-container').innerHTML = '';
+            gameState.notifications = [];
+            gameState.newNotifications = 0;
+            updateUI();
+        }
+    }
+
+    // Benachrichtigung hinzufügen
+    function addNotification(title, content, type) {
+        gameState.notifications.push({ title, content, type });
+        gameState.newNotifications++;
+        updateUI();
+        updateNotifications();
+    }
+
+    // Benachrichtigungen aktualisieren
+    function updateNotifications() {
+        const container = document.getElementById('notifications-container');
+        container.innerHTML = '';
+
+        gameState.notifications.forEach(notification => {
+            let bgColor = 'bg-gray-50';
+            let icon = 'fas fa-info-circle text-gray-600';
+            if(notification.type === 'warning') {
+                bgColor = 'bg-yellow-50';
+                icon = 'fas fa-exclamation text-yellow-600';
+            } else if(notification.type === 'info') {
+                bgColor = 'bg-blue-50';
+                icon = 'fas fa-info-circle text-blue-600';
+            } else if(notification.type === 'success') {
+                bgColor = 'bg-green-50';
+                icon = 'fas fa-check-circle text-green-600';
+            }
+
+            const notifDiv = document.createElement('div');
+            notifDiv.className = `flex items-start p-2 rounded-lg ${bgColor}`;
+            notifDiv.innerHTML = `
+                <div class="p-2 rounded-full mr-3">
+                    <i class="${icon}"></i>
+                </div>
+                <div>
+                    <div class="text-sm font-medium">${notification.title}</div>
+                    <div class="text-xs text-gray-500">${notification.content}</div>
+                </div>
+            `;
+            container.appendChild(notifDiv);
+        });
+    }
+
+    // Neue Rollenspiel-Szenario laden (Platzhalter)
+    function newScenario() {
+        alert("Neues Rollenspiel-Szenario wird geladen...");
+    }
+
+    // Antwortoptionen anzeigen (Platzhalter)
+    function showResponseOptions(type) {
+        const container = document.getElementById('response-options');
+        container.classList.remove('hidden');
+    }
+
+    // Antwort auswählen (Platzhalter)
+    function selectResponse(id) {
+        alert(`Antwort ${id} wurde ausgewählt.`);
+        document.getElementById('response-options').classList.add('hidden');
+    }
+
+    // Tastatur-Events für Chat-Eingaben
+    document.getElementById('team-chat-input').addEventListener('keypress', function(event) {
+        if(event.key === 'Enter') {
+            event.preventDefault();
+            sendTeamMessage();
+        }
+    });
+
+    document.getElementById('employee-chat-input').addEventListener('keypress', function(event) {
+        if(event.key === 'Enter') {
+            event.preventDefault();
+            sendEmployeeMessage();
+        }
+    });
+
+    // Initial UI Setup
+    updateUI();
+</script>
+</body>
+</html>
