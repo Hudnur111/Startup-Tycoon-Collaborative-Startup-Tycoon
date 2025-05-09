@@ -1,0 +1,757 @@
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>StartupSim 2D - Unternehmenssimulation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+      background-color: #f9fafb;
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div
+      class="container mx-auto px-4 py-3 flex items-center justify-between"
+    >
+      <h1 class="text-2xl font-bold text-blue-700 flex items-center space-x-3">
+        <i class="fas fa-gamepad"></i>
+        <span>StartupSim 2D</span>
+      </h1>
+      <button
+        id="btn-menu"
+        aria-label="Menü öffnen"
+        class="md:hidden text-gray-700 focus:outline-none"
+      >
+        <i class="fas fa-bars fa-lg"></i>
+      </button>
+      <nav
+        id="nav-menu"
+        class="hidden md:flex space-x-6 font-semibold text-gray-700"
+      >
+        <button data-tab="dashboard" class="tab-btn hover:text-blue-600">
+          Dashboard
+        </button>
+        <button data-tab="gruendung" class="tab-btn hover:text-blue-600">
+          Gründung
+        </button>
+        <button data-tab="finanzen" class="tab-btn hover:text-blue-600">
+          Finanzen
+        </button>
+        <button data-tab="produkt" class="tab-btn hover:text-blue-600">
+          Produkt
+        </button>
+        <button data-tab="markt" class="tab-btn hover:text-blue-600">
+          Markt
+        </button>
+        <button data-tab="personal" class="tab-btn hover:text-blue-600">
+          Personal
+        </button>
+        <button data-tab="ereignisse" class="tab-btn hover:text-blue-600">
+          Ereignisse
+        </button>
+      </nav>
+    </div>
+    <nav
+      id="mobile-nav"
+      class="md:hidden hidden bg-white border-t border-gray-200"
+    >
+      <div class="flex flex-col space-y-2 p-4 font-semibold text-gray-700">
+        <button data-tab="dashboard" class="tab-btn-mobile text-left">
+          Dashboard
+        </button>
+        <button data-tab="gruendung" class="tab-btn-mobile text-left">
+          Gründung
+        </button>
+        <button data-tab="finanzen" class="tab-btn-mobile text-left">
+          Finanzen
+        </button>
+        <button data-tab="produkt" class="tab-btn-mobile text-left">
+          Produkt
+        </button>
+        <button data-tab="markt" class="tab-btn-mobile text-left">
+          Markt
+        </button>
+        <button data-tab="personal" class="tab-btn-mobile text-left">
+          Personal
+        </button>
+        <button data-tab="ereignisse" class="tab-btn-mobile text-left">
+          Ereignisse
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="flex-grow container mx-auto px-4 py-6 max-w-5xl">
+    <!-- Dashboard -->
+    <section
+      id="dashboard"
+      class="tab-content"
+    >
+      <h2 class="text-3xl font-bold mb-6 text-center text-blue-700">
+        Unternehmensübersicht
+      </h2>
+      <div
+        class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+      >
+        <div
+          class="bg-white rounded-lg shadow p-5 flex flex-col items-center"
+        >
+          <h3 class="text-lg font-semibold mb-2">Finanzen</h3>
+          <p class="text-3xl font-bold text-green-600" id="finanzen-betrag">
+            € 50.000
+          </p>
+          <p class="text-sm text-gray-500">Liquidität</p>
+        </div>
+        <div
+          class="bg-white rounded-lg shadow p-5 flex flex-col items-center"
+        >
+          <h3 class="text-lg font-semibold mb-2">Mitarbeiter</h3>
+          <p class="text-3xl font-bold text-blue-600" id="mitarbeiter-anzahl">
+            3
+          </p>
+          <p class="text-sm text-gray-500">Aktive Teammitglieder</p>
+        </div>
+        <div
+          class="bg-white rounded-lg shadow p-5 flex flex-col items-center"
+        >
+          <h3 class="text-lg font-semibold mb-2">Produktfortschritt</h3>
+          <p class="text-3xl font-bold text-purple-600" id="produkt-fortschritt">
+            25%
+          </p>
+          <p class="text-sm text-gray-500">MVP Entwicklung</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-xl font-semibold mb-4">Aktuelle Ereignisse</h3>
+        <ul id="ereignisse-liste" class="space-y-3 text-gray-700">
+          <li class="p-3 bg-yellow-100 rounded flex items-center space-x-3">
+            <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+            <span>Markttrend ändert sich – erhöhte Nachfrage nach nachhaltigen Produkten.</span>
+          </li>
+          <li class="p-3 bg-green-100 rounded flex items-center space-x-3">
+            <i class="fas fa-lightbulb text-green-600"></i>
+            <span>Forschungsteam hat einen neuen Prototypen erfolgreich getestet.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Gründung -->
+    <section id="gruendung" class="tab-content hidden">
+      <h2 class="text-3xl font-bold mb-6 text-blue-700">Gründung</h2>
+      <form id="gruendung-form" class="bg-white rounded-lg shadow p-6 space-y-6">
+        <div>
+          <label for="branche" class="block font-semibold mb-1">Branche</label>
+          <select
+            id="branche"
+            class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option value="" disabled selected>Bitte wählen</option>
+            <option value="tech">Technologie</option>
+            <option value="handel">Handel</option>
+            <option value="dienstleistung">Dienstleistung</option>
+            <option value="produktion">Produktion</option>
+          </select>
+        </div>
+        <div>
+          <label for="team" class="block font-semibold mb-1">Gründungsteam</label>
+          <select
+            id="team"
+            class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option value="" disabled selected>Bitte wählen</option>
+            <option value="solo">Einzelgründer</option>
+            <option value="klein">Kleines Team (2-3 Personen)</option>
+            <option value="gross">Großes Team (4-6 Personen)</option>
+          </select>
+        </div>
+        <div>
+          <label for="startkapital" class="block font-semibold mb-1">Startkapital (€)</label>
+          <input
+            type="number"
+            id="startkapital"
+            min="1000"
+            max="1000000"
+            step="1000"
+            value="50000"
+            class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          class="bg-blue-600 text-white px-5 py-3 rounded font-semibold hover:bg-blue-700 transition"
+        >
+          Unternehmen gründen
+        </button>
+      </form>
+    </section>
+
+    <!-- Finanzen -->
+    <section id="finanzen" class="tab-content hidden">
+      <h2 class="text-3xl font-bold mb-6 text-blue-700">Finanzmanagement</h2>
+      <div class="bg-white rounded-lg shadow p-6 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h3 class="font-semibold text-xl mb-2">Übersicht</h3>
+            <p>Liquidität: <span id="finanzen-liquiditaet">€ 50.000</span></p>
+            <p>Gewinn/Verlust: <span id="finanzen-gewinn">€ 0</span></p>
+            <p>Budget Marketing: <span id="finanzen-marketing">€ 5.000</span></p>
+            <p>Budget F&E: <span id="finanzen-forschung">€ 10.000</span></p>
+          </div>
+          <div>
+            <h3 class="font-semibold text-xl mb-2">Investitionsrunden</h3>
+            <button
+              id="btn-seed"
+              class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition mb-3 w-full"
+            >
+              Seed-Runde anfragen
+            </button>
+            <button
+              id="btn-series-a"
+              class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 transition w-full"
+              disabled
+            >
+              Series A anfragen (noch nicht verfügbar)
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Produktentwicklung -->
+    <section id="produkt" class="tab-content hidden">
+      <h2 class="text-3xl font-bold mb-6 text-blue-700">Produktentwicklung</h2>
+      <div class="bg-white rounded-lg shadow p-6 space-y-6">
+        <div>
+          <h3 class="font-semibold text-xl mb-2">Roadmap & Zeitplanung</h3>
+          <div class="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+            <div
+              id="produkt-progress-bar"
+              class="bg-purple-600 h-6 rounded-full transition-all duration-500"
+              style="width: 25%"
+            ></div>
+          </div>
+          <p class="mt-2 text-gray-700" id="produkt-progress-text">25% abgeschlossen</p>
+        </div>
+        <div>
+          <h3 class="font-semibold text-xl mb-2">Forschung & Entwicklung</h3>
+          <button
+            id="btn-invest-forschung"
+            class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition"
+          >
+            5.000 € in F&E investieren
+          </button>
+        </div>
+        <div>
+          <h3 class="font-semibold text-xl mb-2">MVP Entscheidung</h3>
+          <div class="flex space-x-4">
+            <button
+              id="btn-mvp-schnell"
+              class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition flex-1"
+            >
+              Schnell auf den Markt
+            </button>
+            <button
+              id="btn-mvp-qualitaet"
+              class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition flex-1"
+            >
+              Qualität priorisieren
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Markt -->
+    <section id="markt" class="tab-content hidden">
+      <h2 class="text-3xl font-bold mb-6 text-blue-700">Markt & Kundenmanagement</h2>
+      <div class="bg-white rounded-lg shadow p-6 space-y-6">
+        <div>
+          <h3 class="font-semibold text-xl mb-2">Marktforschung</h3>
+          <button
+            id="btn-marktforschung"
+            class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+          >
+            Marktforschung durchführen
+          </button>
+          <p id="marktforschung-result" class="mt-2 text-gray-700"></p>
+        </div>
+        <div>
+          <h3 class="font-semibold text-xl mb-2">Marketingkampagnen</h3>
+          <button
+            id="btn-marketing"
+            class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+          >
+            3.000 € Marketingbudget einsetzen
+          </button>
+          <p id="marketing-result" class="mt-2 text-gray-700"></p>
+        </div>
+        <div>
+          <h3 class="font-semibold text-xl mb-2">Vertriebskanäle</h3>
+          <select
+            id="vertriebskanal"
+            class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
+          >
+            <option value="b2b">B2B</option>
+            <option value="b2c">B2C</option>
+            <option value="online">Online-Shop</option>
+            <option value="handelspartner">Handelspartner</option>
+          </select>
+          <button
+            id="btn-verkaufen"
+            class="mt-3 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition w-full"
+          >
+            Produkte verkaufen
+          </button>
+          <p id="verkauf-result" class="mt-2 text-gray-700"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Personal -->
+    <section id="personal" class="tab-content hidden">
+      <h2 class="text-3xl font-bold mb-6 text-blue-700">Personal- & Teammanagement</h2>
+      <div class="bg-white rounded-lg shadow p-6 space-y-6">
+        <div>
+          <h3 class="font-semibold text-xl mb-2">Mitarbeiter einstellen</h3>
+          <select
+            id="jobrolle"
+            class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-600"
+          >
+            <option value="entwickler">Entwickler</option>
+            <option value="marketing">Marketing</option>
+            <option value="vertrieb">Vertrieb</option>
+            <option value="support">Support</option>
+          </select>
+          <button
+            id="btn-einstellen"
+            class="mt-3 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition w-full"
+          >
+            Mitarbeiter einstellen (Kosten: 3.000 €)
+          </button>
+          <p id="einstellung-result" class="mt-2 text-gray-700"></p>
+        </div>
+        <div>
+          <h3 class="font-semibold text-xl mb-2">Teamübersicht</h3>
+          <ul id="team-liste" class="list-disc list-inside text-gray-700"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ereignisse -->
+    <section id="ereignisse" class="tab-content hidden">
+      <h2 class="text-3xl font-bold mb-6 text-blue-700">Ereignissystem</h2>
+      <div class="bg-white rounded-lg shadow p-6 space-y-6">
+        <div>
+          <h3 class="font-semibold text-xl mb-2">Aktuelle Ereignisse</h3>
+          <ul id="game-events" class="space-y-3 text-gray-700"></ul>
+        </div>
+        <button
+          id="btn-nächstes-ereignis"
+          class="bg-red-600 text-white px-5 py-3 rounded hover:bg-red-700 transition"
+        >
+          Nächstes Ereignis auslösen
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-white border-t border-gray-200 py-4 text-center text-gray-600 text-sm">
+    © 2024 StartupSim 2D – Simulation & Spiel
+  </footer>
+
+  <script>
+    // Mobile menu toggle
+    const btnMenu = document.getElementById("btn-menu");
+    const navMenu = document.getElementById("mobile-nav");
+    btnMenu.addEventListener("click", () => {
+      navMenu.classList.toggle("hidden");
+    });
+
+    // Tab navigation
+    const tabButtons = document.querySelectorAll(".tab-btn, .tab-btn-mobile");
+    const tabContents = document.querySelectorAll(".tab-content");
+
+    function showTab(tab) {
+      tabContents.forEach((content) => {
+        content.classList.add("hidden");
+      });
+      const activeTab = document.getElementById(tab);
+      if (activeTab) activeTab.classList.remove("hidden");
+    }
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const tab = btn.getAttribute("data-tab");
+        showTab(tab);
+        if (!navMenu.classList.contains("hidden")) navMenu.classList.add("hidden");
+      });
+    });
+
+    // Start with dashboard visible
+    showTab("dashboard");
+
+    // Game state
+    const state = {
+      liquiditaet: 50000,
+      gewinn: 0,
+      marketingBudget: 5000,
+      forschungBudget: 10000,
+      mitarbeiter: [
+        { id: 1, rolle: "Entwickler", zufriedenheit: 80 },
+        { id: 2, rolle: "Marketing", zufriedenheit: 75 },
+        { id: 3, rolle: "Vertrieb", zufriedenheit: 70 },
+      ],
+      produktFortschritt: 25,
+      events: [
+        {
+          id: 1,
+          text: "Markttrend ändert sich – erhöhte Nachfrage nach nachhaltigen Produkten.",
+          type: "info",
+        },
+        {
+          id: 2,
+          text: "Forschungsteam hat einen neuen Prototypen erfolgreich getestet.",
+          type: "success",
+        },
+        {
+          id: 3,
+          text: "Wirtschaftskrise trifft die Branche – Umsätze sinken.",
+          type: "warning",
+        },
+        {
+          id: 4,
+          text: "Rechtsstreitigkeiten mit einem Konkurrenten beginnen.",
+          type: "danger",
+        },
+        {
+          id: 5,
+          text: "PR-Krise durch fehlerhafte Produktwerbung.",
+          type: "danger",
+        },
+      ],
+      currentEventIndex: 0,
+      teamIdCounter: 4,
+    };
+
+    // Update dashboard values
+    function updateDashboard() {
+      document.getElementById("finanzen-betrag").textContent =
+        "€ " + state.liquiditaet.toLocaleString();
+      document.getElementById("mitarbeiter-anzahl").textContent =
+        state.mitarbeiter.length;
+      document.getElementById("produkt-fortschritt").textContent =
+        state.produktFortschritt + "%";
+    }
+
+    // Update finanzen section
+    function updateFinanzen() {
+      document.getElementById("finanzen-liquiditaet").textContent =
+        "€ " + state.liquiditaet.toLocaleString();
+      document.getElementById("finanzen-gewinn").textContent =
+        "€ " + state.gewinn.toLocaleString();
+      document.getElementById("finanzen-marketing").textContent =
+        "€ " + state.marketingBudget.toLocaleString();
+      document.getElementById("finanzen-forschung").textContent =
+        "€ " + state.forschungBudget.toLocaleString();
+    }
+
+    // Update produkt section
+    function updateProdukt() {
+      const bar = document.getElementById("produkt-progress-bar");
+      const text = document.getElementById("produkt-progress-text");
+      bar.style.width = state.produktFortschritt + "%";
+      text.textContent = state.produktFortschritt + "% abgeschlossen";
+    }
+
+    // Update team list
+    function updateTeamList() {
+      const ul = document.getElementById("team-liste");
+      ul.innerHTML = "";
+      if (state.mitarbeiter.length === 0) {
+        ul.innerHTML = "<li>Keine Mitarbeiter eingestellt.</li>";
+        return;
+      }
+      state.mitarbeiter.forEach((m) => {
+        const li = document.createElement("li");
+        li.textContent = `${m.rolle} (Zufriedenheit: ${m.zufriedenheit}%)`;
+        ul.appendChild(li);
+      });
+    }
+
+    // Update Ereignisse Liste on Dashboard
+    function updateEreignisseDashboard() {
+      const ul = document.getElementById("ereignisse-liste");
+      ul.innerHTML = "";
+      state.events.slice(0, 3).forEach((e) => {
+        const li = document.createElement("li");
+        li.className = "p-3 rounded flex items-center space-x-3 ";
+        let iconClass = "";
+        let bgClass = "";
+        switch (e.type) {
+          case "info":
+            iconClass = "fas fa-info-circle text-blue-600";
+            bgClass = "bg-blue-100";
+            break;
+          case "success":
+            iconClass = "fas fa-check-circle text-green-600";
+            bgClass = "bg-green-100";
+            break;
+          case "warning":
+            iconClass = "fas fa-exclamation-triangle text-yellow-600";
+            bgClass = "bg-yellow-100";
+            break;
+          case "danger":
+            iconClass = "fas fa-bolt text-red-600";
+            bgClass = "bg-red-100";
+            break;
+          default:
+            iconClass = "fas fa-info-circle text-gray-600";
+            bgClass = "bg-gray-100";
+        }
+        li.classList.add(bgClass);
+        li.innerHTML = `<i class="${iconClass}"></i><span>${e.text}</span>`;
+        ul.appendChild(li);
+      });
+    }
+
+    // Update game events list in Ereignisse tab
+    function updateGameEvents() {
+      const ul = document.getElementById("game-events");
+      ul.innerHTML = "";
+      state.events.forEach((e, i) => {
+        const li = document.createElement("li");
+        li.className = "p-3 rounded border border-gray-300";
+        li.textContent = e.text;
+        if (i === state.currentEventIndex) {
+          li.classList.add("bg-blue-100", "font-semibold");
+        }
+        ul.appendChild(li);
+      });
+    }
+
+    // Event handlers
+    document
+      .getElementById("gruendung-form")
+      .addEventListener("submit", (e) => {
+        e.preventDefault();
+        const branche = document.getElementById("branche").value;
+        const team = document.getElementById("team").value;
+        const startkapital = parseInt(
+          document.getElementById("startkapital").value,
+          10
+        );
+        if (!branche || !team || isNaN(startkapital) || startkapital < 1000) {
+          alert("Bitte alle Felder korrekt ausfüllen.");
+          return;
+        }
+        // Reset state for new company
+        state.liquiditaet = startkapital;
+        state.gewinn = 0;
+        state.marketingBudget = Math.floor(startkapital * 0.1);
+        state.forschungBudget = Math.floor(startkapital * 0.15);
+        state.produktFortschritt = 0;
+        state.mitarbeiter = [];
+        state.currentEventIndex = 0;
+        updateDashboard();
+        updateFinanzen();
+        updateProdukt();
+        updateTeamList();
+        updateEreignisseDashboard();
+        alert(
+          `Unternehmen in der Branche "${branche}" mit Team "${team}" und Startkapital €${startkapital.toLocaleString()} gegründet!`
+        );
+        showTab("dashboard");
+      });
+
+    document.getElementById("btn-seed").addEventListener("click", () => {
+      if (state.liquiditaet < 10000) {
+        alert("Nicht genug Liquidität für Seed-Runde.");
+        return;
+      }
+      state.liquiditaet += 50000;
+      alert("Seed-Finanzierung erfolgreich! +50.000 €");
+      updateDashboard();
+      updateFinanzen();
+    });
+
+    document
+      .getElementById("btn-invest-forschung")
+      .addEventListener("click", () => {
+        if (state.liquiditaet < 5000) {
+          alert("Nicht genug Liquidität für F&E-Investition.");
+          return;
+        }
+        state.liquiditaet -= 5000;
+        state.forschungBudget += 5000;
+        state.produktFortschritt += 10;
+        if (state.produktFortschritt > 100) state.produktFortschritt = 100;
+        alert("5.000 € in Forschung investiert. Produktfortschritt +10%");
+        updateDashboard();
+        updateFinanzen();
+        updateProdukt();
+      });
+
+    document.getElementById("btn-mvp-schnell").addEventListener("click", () => {
+      if (state.produktFortschritt < 50) {
+        alert(
+          "Produktfortschritt zu gering für Markteinführung. Investiere mehr in F&E."
+        );
+        return;
+      }
+      alert(
+        "MVP schnell auf den Markt gebracht! Erste Umsätze können generiert werden."
+      );
+      state.gewinn += 10000;
+      state.liquiditaet += 10000;
+      updateDashboard();
+      updateFinanzen();
+    });
+
+    document.getElementById("btn-mvp-qualitaet").addEventListener("click", () => {
+      if (state.produktFortschritt < 80) {
+        alert(
+          "Produktfortschritt zu gering für hochwertige Markteinführung. Investiere mehr in F&E."
+        );
+        return;
+      }
+      alert(
+        "MVP mit hoher Qualität auf den Markt gebracht! Kunden sind zufrieden, Umsatz steigt."
+      );
+      state.gewinn += 20000;
+      state.liquiditaet += 20000;
+      updateDashboard();
+      updateFinanzen();
+    });
+
+    document.getElementById("btn-marktforschung").addEventListener("click", () => {
+      if (state.liquiditaet < 2000) {
+        alert("Nicht genug Liquidität für Marktforschung.");
+        return;
+      }
+      state.liquiditaet -= 2000;
+      const trends = [
+        "Nachfrage nach nachhaltigen Produkten steigt.",
+        "Konkurrent bringt neues Produkt auf den Markt.",
+        "Kunden wünschen sich bessere Supportleistungen.",
+        "Markt wächst jährlich um 10%.",
+      ];
+      const trend = trends[Math.floor(Math.random() * trends.length)];
+      document.getElementById("marktforschung-result").textContent =
+        "Ergebnis: " + trend;
+      updateDashboard();
+      updateFinanzen();
+    });
+
+    document.getElementById("btn-marketing").addEventListener("click", () => {
+      if (state.marketingBudget < 3000) {
+        alert("Nicht genug Marketingbudget.");
+        return;
+      }
+      state.marketingBudget -= 3000;
+      state.gewinn += 7000;
+      state.liquiditaet += 7000;
+      document.getElementById("marketing-result").textContent =
+        "Marketingkampagne erfolgreich! Umsatzsteigerung erzielt.";
+      updateDashboard();
+      updateFinanzen();
+    });
+
+    document.getElementById("btn-verkaufen").addEventListener("click", () => {
+      const kanal = document.getElementById("vertriebskanal").value;
+      let umsatz = 0;
+      switch (kanal) {
+        case "b2b":
+          umsatz = 8000;
+          break;
+        case "b2c":
+          umsatz = 6000;
+          break;
+        case "online":
+          umsatz = 7000;
+          break;
+        case "handelspartner":
+          umsatz = 5000;
+          break;
+      }
+      state.gewinn += umsatz;
+      state.liquiditaet += umsatz;
+      document.getElementById("verkauf-result").textContent =
+        `Verkauf über ${kanal.toUpperCase()} erfolgreich! Umsatz: €${umsatz.toLocaleString()}`;
+      updateDashboard();
+      updateFinanzen();
+    });
+
+    document.getElementById("btn-einstellen").addEventListener("click", () => {
+      if (state.liquiditaet < 3000) {
+        alert("Nicht genug Liquidität, um Mitarbeiter einzustellen.");
+        return;
+      }
+      const rolleSelect = document.getElementById("jobrolle");
+      const rolle = rolleSelect.options[rolleSelect.selectedIndex].text;
+      state.liquiditaet -= 3000;
+      state.mitarbeiter.push({
+        id: state.teamIdCounter++,
+        rolle: rolle,
+        zufriedenheit: 80,
+      });
+      alert(`Mitarbeiter als ${rolle} eingestellt!`);
+      updateDashboard();
+      updateFinanzen();
+      updateTeamList();
+    });
+
+    document
+      .getElementById("btn-nächstes-ereignis")
+      .addEventListener("click", () => {
+        state.currentEventIndex++;
+        if (state.currentEventIndex >= state.events.length) {
+          state.currentEventIndex = 0;
+        }
+        const event = state.events[state.currentEventIndex];
+        alert("Ereignis: " + event.text);
+        // Beispielhafte Auswirkungen:
+        if (event.type === "danger") {
+          state.liquiditaet -= 10000;
+          state.gewinn -= 5000;
+          alert("Finanzielle Verluste durch das Ereignis!");
+        } else if (event.type === "success") {
+          state.produktFortschritt += 15;
+          if (state.produktFortschritt > 100) state.produktFortschritt = 100;
+          alert("Produktfortschritt durch Erfolg erhöht!");
+        } else if (event.type === "warning") {
+          state.liquiditaet -= 5000;
+          alert("Umsatzrückgang durch Wirtschaftskrise.");
+        }
+        updateDashboard();
+        updateFinanzen();
+        updateProdukt();
+        updateGameEvents();
+        updateEreignisseDashboard();
+      });
+
+    // Initial updates
+    updateDashboard();
+    updateFinanzen();
+    updateProdukt();
+    updateTeamList();
+    updateEreignisseDashboard();
+    updateGameEvents();
+  </script>
+</body>
+</html>
