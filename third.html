@@ -1,0 +1,1123 @@
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>StartupSim 2D - Realistische Unternehmenssimulation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+      background-color: #f9fafb;
+    }
+    #game-events, #ereignisse-liste {
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    #game-events::-webkit-scrollbar, #ereignisse-liste::-webkit-scrollbar {
+      width: 8px;
+    }
+    #game-events::-webkit-scrollbar-thumb, #ereignisse-liste::-webkit-scrollbar-thumb {
+      background-color: #a78bfa;
+      border-radius: 4px;
+    }
+    .tooltip {
+      position: relative;
+      cursor: help;
+    }
+    .tooltip:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+    .tooltip-text {
+      visibility: hidden;
+      opacity: 0;
+      width: 220px;
+      background-color: #4b5563;
+      color: #fff;
+      text-align: left;
+      border-radius: 6px;
+      padding: 8px;
+      position: absolute;
+      z-index: 10;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -110px;
+      transition: opacity 0.3s;
+      font-size: 0.85rem;
+      line-height: 1.2;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .tooltip-text::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: #4b5563 transparent transparent transparent;
+    }
+    /* Scrollbar for tables */
+    .scrollable-table {
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .scrollable-table::-webkit-scrollbar {
+      width: 8px;
+    }
+    .scrollable-table::-webkit-scrollbar-thumb {
+      background-color: #a78bfa;
+      border-radius: 4px;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+      <h1 class="text-2xl font-bold text-indigo-700 flex items-center space-x-3 select-none">
+        <i class="fas fa-building"></i>
+        <span>StartupSim 2D</span>
+      </h1>
+      <button id="btn-menu" aria-label="Menü öffnen" class="md:hidden text-gray-700 focus:outline-none">
+        <i class="fas fa-bars fa-lg"></i>
+      </button>
+      <nav id="nav-menu" class="hidden md:flex space-x-6 font-semibold text-gray-700">
+        <button data-tab="dashboard" class="tab-btn hover:text-indigo-600 focus:outline-none focus:text-indigo-600">Dashboard</button>
+        <button data-tab="gruendung" class="tab-btn hover:text-indigo-600 focus:outline-none focus:text-indigo-600">Gründung</button>
+        <button data-tab="finanzen" class="tab-btn hover:text-indigo-600 focus:outline-none focus:text-indigo-600">Finanzen</button>
+        <button data-tab="produkt" class="tab-btn hover:text-indigo-600 focus:outline-none focus:text-indigo-600">Produkt</button>
+        <button data-tab="markt" class="tab-btn hover:text-indigo-600 focus:outline-none focus:text-indigo-600">Markt</button>
+        <button data-tab="personal" class="tab-btn hover:text-indigo-600 focus:outline-none focus:text-indigo-600">Personal</button>
+        <button data-tab="logistik" class="tab-btn hover:text-indigo-600 focus:outline-none focus:text-indigo-600">Logistik</button>
+        <button data-tab="ereignisse" class="tab-btn hover:text-indigo-600 focus:outline-none focus:text-indigo-600">Ereignisse</button>
+      </nav>
+    </div>
+    <nav id="mobile-nav" class="md:hidden hidden bg-white border-t border-gray-200">
+      <div class="flex flex-col space-y-2 p-4 font-semibold text-gray-700">
+        <button data-tab="dashboard" class="tab-btn-mobile text-left focus:outline-none focus:bg-indigo-100 rounded px-2 py-1">Dashboard</button>
+        <button data-tab="gruendung" class="tab-btn-mobile text-left focus:outline-none focus:bg-indigo-100 rounded px-2 py-1">Gründung</button>
+        <button data-tab="finanzen" class="tab-btn-mobile text-left focus:outline-none focus:bg-indigo-100 rounded px-2 py-1">Finanzen</button>
+        <button data-tab="produkt" class="tab-btn-mobile text-left focus:outline-none focus:bg-indigo-100 rounded px-2 py-1">Produkt</button>
+        <button data-tab="markt" class="tab-btn-mobile text-left focus:outline-none focus:bg-indigo-100 rounded px-2 py-1">Markt</button>
+        <button data-tab="personal" class="tab-btn-mobile text-left focus:outline-none focus:bg-indigo-100 rounded px-2 py-1">Personal</button>
+        <button data-tab="logistik" class="tab-btn-mobile text-left focus:outline-none focus:bg-indigo-100 rounded px-2 py-1">Logistik</button>
+        <button data-tab="ereignisse" class="tab-btn-mobile text-left focus:outline-none focus:bg-indigo-100 rounded px-2 py-1">Ereignisse</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="flex-grow container mx-auto px-4 py-6 max-w-7xl">
+    <!-- Dashboard -->
+    <section id="dashboard" class="tab-content">
+      <h2 class="text-3xl font-bold mb-6 text-center text-indigo-700 select-none">Unternehmensübersicht</h2>
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-5 flex flex-col items-center border border-indigo-200">
+          <h3 class="text-lg font-semibold mb-2 select-none tooltip">Finanzen
+            <span class="tooltip-text">Verfügbare Liquidität für Ausgaben und Investitionen</span>
+          </h3>
+          <p class="text-4xl font-extrabold text-green-600" id="finanzen-betrag">€ 50.000</p>
+          <p class="text-sm text-gray-500 select-none">Liquidität</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-5 flex flex-col items-center border border-indigo-200">
+          <h3 class="text-lg font-semibold mb-2 select-none tooltip">Gewinn/Verlust
+            <span class="tooltip-text">Aktueller Gewinn oder Verlust des Unternehmens</span>
+          </h3>
+          <p class="text-4xl font-extrabold text-green-700" id="finanzen-gewinn">€ 0</p>
+          <p class="text-sm text-gray-500 select-none">Gewinn/Verlust</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-5 flex flex-col items-center border border-indigo-200">
+          <h3 class="text-lg font-semibold mb-2 select-none tooltip">Produktfortschritt
+            <span class="tooltip-text">Fortschritt der Produktentwicklung in Prozent</span>
+          </h3>
+          <p class="text-4xl font-extrabold text-purple-600" id="produkt-fortschritt">25%</p>
+          <p class="text-sm text-gray-500 select-none">MVP Entwicklung</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-5 flex flex-col items-center border border-indigo-200">
+          <h3 class="text-lg font-semibold mb-2 select-none tooltip">Marktposition
+            <span class="tooltip-text">Position im Branchenranking (1 = Marktführer)</span>
+          </h3>
+          <p class="text-4xl font-extrabold text-red-600" id="markt-position">3</p>
+          <p class="text-sm text-gray-500 select-none">Branchenranking</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-5 flex flex-col items-center border border-indigo-200">
+          <h3 class="text-lg font-semibold mb-2 select-none tooltip">Unternehmenswachstum
+            <span class="tooltip-text">Gesamtes Wachstum basierend auf Produkt, Team und Markt</span>
+          </h3>
+          <p class="text-4xl font-extrabold text-indigo-700" id="unternehmens-wachstum">0%</p>
+          <p class="text-sm text-gray-500 select-none">Wachstum</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-6 mb-8">
+        <h3 class="text-xl font-semibold mb-4 select-none">Aktuelle Ereignisse</h3>
+        <ul id="ereignisse-liste" class="space-y-3 text-gray-700"></ul>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-xl font-semibold mb-4 select-none">Unternehmensentwicklung</h3>
+        <div class="w-full bg-gray-200 rounded-full h-8 overflow-hidden mb-2">
+          <div id="entwicklung-progress-bar" class="bg-indigo-600 h-8 rounded-full transition-all duration-700" style="width: 0%"></div>
+        </div>
+        <p class="text-center text-gray-700 font-semibold select-none" id="entwicklung-progress-text">0% Wachstum</p>
+      </div>
+    </section>
+
+    <!-- Gründung -->
+    <section id="gruendung" class="tab-content hidden">
+      <h2 class="text-3xl font-bold mb-6 text-indigo-700 select-none">Gründung</h2>
+      <form id="gruendung-form" class="bg-white rounded-lg shadow p-6 space-y-6">
+        <div>
+          <label for="branche" class="block font-semibold mb-1 select-none tooltip">Branche
+            <span class="tooltip-text">Wähle die Branche deines Unternehmens (z.B. Technologie, Handel)</span>
+          </label>
+          <select id="branche" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+            <option value="" disabled selected>Bitte wählen</option>
+            <option value="tech">Technologie</option>
+            <option value="handel">Handel</option>
+            <option value="dienstleistung">Dienstleistung</option>
+            <option value="produktion">Produktion</option>
+          </select>
+        </div>
+        <div>
+          <label for="team" class="block font-semibold mb-1 select-none tooltip">Gründungsteam
+            <span class="tooltip-text">Wähle die Größe deines Gründungsteams</span>
+          </label>
+          <select id="team" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+            <option value="" disabled selected>Bitte wählen</option>
+            <option value="solo">Einzelgründer</option>
+            <option value="klein">Kleines Team (2-3 Personen)</option>
+            <option value="gross">Großes Team (4-6 Personen)</option>
+          </select>
+        </div>
+        <div>
+          <label for="startkapital" class="block font-semibold mb-1 select-none tooltip">Startkapital (€)
+            <span class="tooltip-text">Verfügbares Kapital für den Start deines Unternehmens</span>
+          </label>
+          <input type="number" id="startkapital" min="1000" max="1000000" step="1000" value="50000" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required />
+        </div>
+        <button type="submit" class="bg-indigo-600 text-white px-5 py-3 rounded font-semibold hover:bg-indigo-700 transition w-full">Unternehmen gründen</button>
+      </form>
+    </section>
+
+    <!-- Finanzen -->
+    <section id="finanzen" class="tab-content hidden">
+      <h2 class="text-3xl font-bold mb-6 text-indigo-700 select-none">Finanzmanagement</h2>
+      <div class="bg-white rounded-lg shadow p-6 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <h3 class="font-semibold text-xl mb-2 select-none tooltip">Übersicht
+              <span class="tooltip-text">Aktuelle Finanzkennzahlen deines Unternehmens</span>
+            </h3>
+            <table class="w-full text-left border-collapse">
+              <tbody>
+                <tr class="border-b border-gray-200">
+                  <td class="py-2 font-medium">Liquidität</td>
+                  <td class="py-2 text-right" id="finanzen-liquiditaet">€ 50.000</td>
+                </tr>
+                <tr class="border-b border-gray-200">
+                  <td class="py-2 font-medium">Gewinn/Verlust</td>
+                  <td class="py-2 text-right" id="finanzen-gewinn">€ 0</td>
+                </tr>
+                <tr class="border-b border-gray-200">
+                  <td class="py-2 font-medium tooltip">Budget Marketing
+                    <span class="tooltip-text">Verfügbares Budget für Marketingmaßnahmen</span>
+                  </td>
+                  <td class="py-2 text-right" id="finanzen-marketing">€ 5.000</td>
+                </tr>
+                <tr>
+                  <td class="py-2 font-medium tooltip">Budget F&E
+                    <span class="tooltip-text">Verfügbares Budget für Forschung & Entwicklung</span>
+                  </td>
+                  <td class="py-2 text-right" id="finanzen-forschung">€ 10.000</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h3 class="font-semibold text-xl mb-2 select-none tooltip">Investitionsrunden
+              <span class="tooltip-text">Fordere Investitionen an, um dein Unternehmen zu finanzieren</span>
+            </h3>
+            <button id="btn-seed" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition mb-3 w-full">Seed-Runde anfragen</button>
+            <button id="btn-series-a" class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 transition w-full" disabled title="Noch nicht verfügbar">Series A anfragen (noch nicht verfügbar)</button>
+          </div>
+          <div>
+            <h3 class="font-semibold text-xl mb-2 select-none tooltip">Budgetverwaltung
+              <span class="tooltip-text">Verwalte deine Budgets für Gehälter, Marketing und F&E</span>
+            </h3>
+            <form id="budget-form" class="space-y-3">
+              <div>
+                <label for="budget-gehaelter" class="block font-medium mb-1">Gehälter (€)</label>
+                <input type="number" id="budget-gehaelter" min="0" step="500" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" value="15000" />
+              </div>
+              <div>
+                <label for="budget-marketing" class="block font-medium mb-1">Marketing (€)</label>
+                <input type="number" id="budget-marketing" min="0" step="500" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" value="5000" />
+              </div>
+              <div>
+                <label for="budget-forschung" class="block font-medium mb-1">Forschung & Entwicklung (€)</label>
+                <input type="number" id="budget-forschung" min="0" step="500" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" value="10000" />
+              </div>
+              <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition w-full">Budget aktualisieren</button>
+            </form>
+            <p id="budget-feedback" class="mt-2 text-sm text-green-600 font-semibold select-none"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Produktentwicklung -->
+    <section id="produkt" class="tab-content hidden">
+      <h2 class="text-3xl font-bold mb-6 text-indigo-700 select-none">Produktentwicklung</h2>
+      <div class="bg-white rounded-lg shadow p-6 space-y-6">
+        <div>
+          <h3 class="font-semibold text-xl mb-2 select-none tooltip">Roadmap & Zeitplanung
+            <span class="tooltip-text">Plane und priorisiere Produktfeatures und Meilensteine</span>
+          </h3>
+          <div class="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+            <div id="produkt-progress-bar" class="bg-purple-600 h-6 rounded-full transition-all duration-500" style="width: 25%"></div>
+          </div>
+          <p class="mt-2 text-gray-700 select-none" id="produkt-progress-text">25% abgeschlossen</p>
+          <table class="w-full mt-4 text-left border-collapse scrollable-table rounded border border-gray-300">
+            <thead class="bg-purple-100 sticky top-0">
+              <tr>
+                <th class="py-2 px-3 border-b border-gray-300">Feature</th>
+                <th class="py-2 px-3 border-b border-gray-300">Priorität</th>
+                <th class="py-2 px-3 border-b border-gray-300">Status</th>
+                <th class="py-2 px-3 border-b border-gray-300">Aktion</th>
+              </tr>
+            </thead>
+            <tbody id="feature-list"></tbody>
+          </table>
+        </div>
+        <div>
+          <h3 class="font-semibold text-xl mb-2 select-none tooltip">Forschung & Entwicklung
+            <span class="tooltip-text">Investiere in Innovationen und verbessere dein Produkt</span>
+          </h3>
+          <button id="btn-invest-forschung" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition">5.000 € in F&E investieren</button>
+          <p id="forschung-feedback" class="mt-2 text-green-700 font-semibold select-none"></p>
+        </div>
+        <div>
+          <h3 class="font-semibold text-xl mb-2 select-none tooltip">MVP Entscheidung
+            <span class="tooltip-text">Wähle zwischen schneller Markteinführung oder hoher Produktqualität</span>
+          </h3>
+          <div class="flex space-x-4">
+            <button id="btn-mvp-schnell" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition flex-1">Schnell auf den Markt</button>
+            <button id="btn-mvp-qualitaet" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition flex-1">Qualität priorisieren</button>
+          </div>
+          <p id="mvp-feedback" class="mt-2 text-indigo-700 font-semibold select-none"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Markt -->
+    <section id="markt" class="tab-content hidden">
+      <h2 class="text-3xl font-bold mb-6 text-indigo-700 select-none">Markt & Kundenmanagement</h2>
+      <div class="bg-white rounded-lg shadow p-6 space-y-6">
+        <div>
+          <h3 class="font-semibold text-xl mb-2 select-none tooltip">Marktforschung
+            <span class="tooltip-text">Analysiere Konkurrenz, Trends und Kundenwünsche</span>
+          </h3>
+          <button id="btn-marktforschung" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">Marktforschung durchführen</button>
+          <p id="marktforschung-result" class="mt-2 text-gray-700 select-text"></p>
+        </div>
+        <div>
+          <h3 class="font-semibold text-xl mb-2 select-none tooltip">Marketingkampagnen
+            <span class="tooltip-text">Plane und führe Werbekampagnen durch</span>
+          </h3>
+          <button id="btn-marketing" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">3.000 € Marketingbudget einsetzen</button>
+          <p id="marketing-result" class="mt-2 text-gray-700 select-text"></p>
+        </div>
+        <div>
+          <h3 class="font-semibold text-xl mb-2 select-none tooltip">Vertriebskanäle
+            <span class="tooltip-text">Verwalte Verkaufskanäle und Kundenfeedback</span>
+          </h3>
+          <select id="vertriebskanal" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-600">
+            <option value="b2b">B2B</option>
+            <option value="b2c">B2C</option>
+            <option value="online">Online-Shop</option>
+            <option value="handelspartner">Handelspartner</option>
+          </select>
+          <button id="btn-verkaufen" class="mt-3 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition w-full">Produkte verkaufen</button>
+          <p id="verkauf-result" class="mt-2 text-gray-700 select-text"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Personal -->
+    <section id="personal" class="tab-content hidden">
+      <h2 class="text-3xl font-bold mb-6 text-indigo-700 select-none">Personal- & Teammanagement</h2>
+      <div class="bg-white rounded-lg shadow p-6 space-y-6">
+        <div>
+          <h3 class="font-semibold text-xl mb-2 select-none tooltip">Mitarbeiter einstellen
+            <span class="tooltip-text">Stelle neue Mitarbeiter mit unterschiedlichen Rollen ein</span>
+          </h3>
+          <select id="jobrolle" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-600">
+            <option value="entwickler">Entwickler</option>
+            <option value="marketing">Marketing</option>
+            <option value="vertrieb">Vertrieb</option>
+            <option value="support">Support</option>
+            <option value="forschung">Forschung & Entwicklung</option>
+            <option value="logistik">Logistik</option>
+          </select>
+          <button id="btn-einstellen" class="mt-3 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition w-full">Mitarbeiter einstellen (Kosten: 3.000 €)</button>
+          <p id="einstellung-result" class="mt-2 text-gray-700 select-text"></p>
+        </div>
+        <div>
+          <h3 class="font-semibold text-xl mb-2 select-none tooltip">Teamübersicht
+            <span class="tooltip-text">Übersicht über Mitarbeiter, Zufriedenheit und Produktivität</span>
+          </h3>
+          <div class="scrollable-table rounded border border-gray-300 max-h-64 overflow-y-auto">
+            <table class="w-full text-left border-collapse">
+              <thead class="bg-purple-100 sticky top-0">
+                <tr>
+                  <th class="py-2 px-3 border-b border-gray-300">Name</th>
+                  <th class="py-2 px-3 border-b border-gray-300">Rolle</th>
+                  <th class="py-2 px-3 border-b border-gray-300">Zufriedenheit</th>
+                  <th class="py-2 px-3 border-b border-gray-300">Produktivität</th>
+                  <th class="py-2 px-3 border-b border-gray-300">Aktionen</th>
+                </tr>
+              </thead>
+              <tbody id="team-liste"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Logistik -->
+    <section id="logistik" class="tab-content hidden">
+      <h2 class="text-3xl font-bold mb-6 text-indigo-700 select-none">Lieferkette & Logistik</h2>
+      <div class="bg-white rounded-lg shadow p-6 space-y-6">
+        <div>
+          <h3 class="font-semibold text-xl mb-2 select-none tooltip">Warenbestand
+            <span class="tooltip-text">Verwalte Lagerbestände und Nachbestellungen</span>
+          </h3>
+          <table class="w-full text-left border-collapse scrollable-table rounded border border-gray-300 max-h-64 overflow-y-auto">
+            <thead class="bg-indigo-100 sticky top-0">
+              <tr>
+                <th class="py-2 px-3 border-b border-gray-300">Produkt</th>
+                <th class="py-2 px-3 border-b border-gray-300">Lagerbestand</th>
+                <th class="py-2 px-3 border-b border-gray-300">Nachbestellung</th>
+                <th class="py-2 px-3 border-b border-gray-300">Aktion</th>
+              </tr>
+            </thead>
+            <tbody id="lager-liste"></tbody>
+          </table>
+        </div>
+        <div>
+          <h3 class="font-semibold text-xl mb-2 select-none tooltip">Lieferantenmanagement
+            <span class="tooltip-text">Verwalte Lieferanten und Lieferzeiten</span>
+          </h3>
+          <table class="w-full text-left border-collapse scrollable-table rounded border border-gray-300 max-h-48 overflow-y-auto">
+            <thead class="bg-indigo-100 sticky top-0">
+              <tr>
+                <th class="py-2 px-3 border-b border-gray-300">Lieferant</th>
+                <th class="py-2 px-3 border-b border-gray-300">Zuverlässigkeit</th>
+                <th class="py-2 px-3 border-b border-gray-300">Kostenfaktor</th>
+              </tr>
+            </thead>
+            <tbody id="lieferanten-liste"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ereignisse -->
+    <section id="ereignisse" class="tab-content hidden">
+      <h2 class="text-3xl font-bold mb-6 text-indigo-700 select-none">Ereignissystem</h2>
+      <div class="bg-white rounded-lg shadow p-6 space-y-6">
+        <div>
+          <h3 class="font-semibold text-xl mb-2 select-none">Aktuelle Ereignisse</h3>
+          <ul id="game-events" class="space-y-3 text-gray-700"></ul>
+        </div>
+        <button id="btn-nächstes-ereignis" class="bg-red-600 text-white px-5 py-3 rounded hover:bg-red-700 transition w-full">Nächstes Ereignis auslösen</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-white border-t border-gray-200 py-4 text-center text-gray-600 text-sm select-none">
+    © 2024 StartupSim 2D – Realistische Unternehmenssimulation
+  </footer>
+
+  <script>
+    // Mobile menu toggle
+    const btnMenu = document.getElementById("btn-menu");
+    const navMenu = document.getElementById("mobile-nav");
+    btnMenu.addEventListener("click", () => {
+      navMenu.classList.toggle("hidden");
+    });
+
+    // Tab navigation
+    const tabButtons = document.querySelectorAll(".tab-btn, .tab-btn-mobile");
+    const tabContents = document.querySelectorAll(".tab-content");
+
+    function showTab(tab) {
+      tabContents.forEach((content) => {
+        content.classList.add("hidden");
+      });
+      const activeTab = document.getElementById(tab);
+      if (activeTab) activeTab.classList.remove("hidden");
+      // Highlight active tab button
+      tabButtons.forEach((btn) => {
+        if (btn.getAttribute("data-tab") === tab) {
+          btn.classList.add("text-indigo-700", "font-bold");
+          btn.classList.remove("text-gray-700");
+        } else {
+          btn.classList.remove("text-indigo-700", "font-bold");
+          btn.classList.add("text-gray-700");
+        }
+      });
+    }
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const tab = btn.getAttribute("data-tab");
+        showTab(tab);
+        if (!navMenu.classList.contains("hidden")) navMenu.classList.add("hidden");
+      });
+    });
+
+    // Start with dashboard visible
+    showTab("dashboard");
+
+    // Game state
+    const state = {
+      liquiditaet: 50000,
+      gewinn: 0,
+      marketingBudget: 5000,
+      forschungBudget: 10000,
+      gehaelterBudget: 15000,
+      mitarbeiter: [
+        { id: 1, name: "Anna", rolle: "Entwickler", zufriedenheit: 80, produktivitaet: 1.1, erfahrung: 3 },
+        { id: 2, name: "Ben", rolle: "Marketing", zufriedenheit: 75, produktivitaet: 1.0, erfahrung: 2 },
+        { id: 3, name: "Clara", rolle: "Vertrieb", zufriedenheit: 70, produktivitaet: 1.0, erfahrung: 4 },
+      ],
+      produktFortschritt: 25,
+      marktPosition: 3,
+      unternehmensWachstum: 0,
+      events: [
+        {
+          id: 1,
+          text: "Markttrend ändert sich – erhöhte Nachfrage nach nachhaltigen Produkten.",
+          type: "info",
+          effect: () => {
+            state.marktPosition = Math.max(1, state.marktPosition - 1);
+            addGameEvent("Marktposition verbessert sich durch Trendanpassung.");
+          },
+        },
+        {
+          id: 2,
+          text: "Forschungsteam hat einen neuen Prototypen erfolgreich getestet.",
+          type: "success",
+          effect: () => {
+            state.produktFortschritt = Math.min(100, state.produktFortschritt + 20);
+            addGameEvent("Produktfortschritt steigt durch erfolgreichen Prototyp.");
+          },
+        },
+        {
+          id: 3,
+          text: "Wirtschaftskrise trifft die Branche – Umsätze sinken.",
+          type: "warning",
+          effect: () => {
+            state.liquiditaet = Math.max(0, state.liquiditaet - 15000);
+            state.gewinn = Math.max(0, state.gewinn - 10000);
+            addGameEvent("Finanzielle Verluste durch Wirtschaftskrise.");
+          },
+        },
+        {
+          id: 4,
+          text: "Rechtsstreitigkeiten mit einem Konkurrenten beginnen.",
+          type: "danger",
+          effect: () => {
+            state.liquiditaet = Math.max(0, state.liquiditaet - 10000);
+            addGameEvent("Kosten durch Rechtsstreitigkeiten belastet.");
+          },
+        },
+        {
+          id: 5,
+          text: "PR-Krise durch fehlerhafte Produktwerbung.",
+          type: "danger",
+          effect: () => {
+            state.marktPosition = Math.min(10, state.marktPosition + 1);
+            addGameEvent("Marktposition verschlechtert sich durch PR-Krise.");
+          },
+        },
+      ],
+      currentEventIndex: 0,
+      gameEventsLog: [],
+      teamIdCounter: 4,
+      features: [
+        { id: 1, name: "Benutzer-Login", prioritaet: 3, status: "In Planung" },
+        { id: 2, name: "Dashboard", prioritaet: 2, status: "In Arbeit" },
+        { id: 3, name: "Produktseite", prioritaet: 1, status: "Offen" },
+        { id: 4, name: "Zahlungssystem", prioritaet: 2, status: "Offen" },
+        { id: 5, name: "Kundenfeedback", prioritaet: 3, status: "Offen" },
+      ],
+      lager: [
+        { id: 1, produkt: "Produkt A", bestand: 120, nachbestellung: 0 },
+        { id: 2, produkt: "Produkt B", bestand: 80, nachbestellung: 0 },
+      ],
+      lieferanten: [
+        { id: 1, name: "Lieferant X", zuverlaessigkeit: 90, kostenfaktor: 1.0 },
+        { id: 2, name: "Lieferant Y", zuverlaessigkeit: 75, kostenfaktor: 0.85 },
+      ],
+    };
+
+    // Utility: Format currency
+    function formatCurrency(value) {
+      return "€ " + value.toLocaleString("de-DE");
+    }
+
+    // Update dashboard values
+    function updateDashboard() {
+      document.getElementById("finanzen-betrag").textContent = formatCurrency(state.liquiditaet);
+      document.getElementById("finanzen-gewinn").textContent = formatCurrency(state.gewinn);
+      document.getElementById("produkt-fortschritt").textContent = state.produktFortschritt + "%";
+      document.getElementById("markt-position").textContent = state.marktPosition;
+      document.getElementById("unternehmens-wachstum").textContent = state.unternehmensWachstum + "%";
+      document.getElementById("entwicklung-progress-bar").style.width = state.unternehmensWachstum + "%";
+      document.getElementById("entwicklung-progress-text").textContent = state.unternehmensWachstum + "% Wachstum";
+    }
+
+    // Update finanzen section
+    function updateFinanzen() {
+      document.getElementById("finanzen-liquiditaet").textContent = formatCurrency(state.liquiditaet);
+      document.getElementById("finanzen-gewinn").textContent = formatCurrency(state.gewinn);
+      document.getElementById("finanzen-marketing").textContent = formatCurrency(state.marketingBudget);
+      document.getElementById("finanzen-forschung").textContent = formatCurrency(state.forschungBudget);
+      document.getElementById("budget-gehaelter").value = state.gehaelterBudget;
+      document.getElementById("budget-marketing").value = state.marketingBudget;
+      document.getElementById("budget-forschung").value = state.forschungBudget;
+    }
+
+    // Update produkt section
+    function updateProdukt() {
+      const bar = document.getElementById("produkt-progress-bar");
+      const text = document.getElementById("produkt-progress-text");
+      bar.style.width = state.produktFortschritt + "%";
+      text.textContent = state.produktFortschritt + "% abgeschlossen";
+      renderFeatureList();
+    }
+
+    // Render Feature List in Produktentwicklung
+    function renderFeatureList() {
+      const tbody = document.getElementById("feature-list");
+      tbody.innerHTML = "";
+      state.features.sort((a,b) => a.prioritaet - b.prioritaet).forEach(feature => {
+        const tr = document.createElement("tr");
+        tr.className = "border-b border-gray-200 hover:bg-purple-50 transition";
+        tr.innerHTML = `
+          <td class="py-2 px-3">${feature.name}</td>
+          <td class="py-2 px-3 text-center">${feature.prioritaet}</td>
+          <td class="py-2 px-3 text-center">${feature.status}</td>
+          <td class="py-2 px-3 text-center">
+            <button class="btn-feature-up text-indigo-600 hover:text-indigo-800 mr-2" data-id="${feature.id}" title="Priorität erhöhen"><i class="fas fa-arrow-up"></i></button>
+            <button class="btn-feature-down text-indigo-600 hover:text-indigo-800" data-id="${feature.id}" title="Priorität verringern"><i class="fas fa-arrow-down"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      // Attach event listeners for priority buttons
+      document.querySelectorAll(".btn-feature-up").forEach(btn => {
+        btn.onclick = () => {
+          const id = parseInt(btn.getAttribute("data-id"));
+          changeFeaturePriority(id, -1);
+        };
+      });
+      document.querySelectorAll(".btn-feature-down").forEach(btn => {
+        btn.onclick = () => {
+          const id = parseInt(btn.getAttribute("data-id"));
+          changeFeaturePriority(id, 1);
+        };
+      });
+    }
+
+    // Change feature priority
+    function changeFeaturePriority(id, delta) {
+      const feature = state.features.find(f => f.id === id);
+      if (!feature) return;
+      let newPriority = feature.prioritaet + delta;
+      if (newPriority < 1) newPriority = 1;
+      if (newPriority > 5) newPriority = 5;
+      feature.prioritaet = newPriority;
+      renderFeatureList();
+      addGameEvent(`Priorität von Feature "${feature.name}" auf ${newPriority} gesetzt.`);
+    }
+
+    // Update team list
+    function updateTeamList() {
+      const tbody = document.getElementById("team-liste");
+      tbody.innerHTML = "";
+      if (state.mitarbeiter.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-gray-500 select-none">Keine Mitarbeiter eingestellt.</td></tr>`;
+        return;
+      }
+      state.mitarbeiter.forEach(m => {
+        const tr = document.createElement("tr");
+        tr.className = "border-b border-gray-200 hover:bg-purple-50 transition";
+        tr.innerHTML = `
+          <td class="py-2 px-3">${m.name}</td>
+          <td class="py-2 px-3">${m.rolle}</td>
+          <td class="py-2 px-3 text-center">${m.zufriedenheit.toFixed(0)}%</td>
+          <td class="py-2 px-3 text-center">${m.produktivitaet.toFixed(2)}</td>
+          <td class="py-2 px-3 text-center">
+            <button class="btn-mitarbeiter-boost text-green-600 hover:text-green-800" data-id="${m.id}" title="Motivation steigern"><i class="fas fa-smile"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      // Attach event listeners for motivation boost
+      document.querySelectorAll(".btn-mitarbeiter-boost").forEach(btn => {
+        btn.onclick = () => {
+          const id = parseInt(btn.getAttribute("data-id"));
+          boostMitarbeiterMotivation(id);
+        };
+      });
+    }
+
+    // Boost Mitarbeiter Motivation
+    function boostMitarbeiterMotivation(id) {
+      const mitarbeiter = state.mitarbeiter.find(m => m.id === id);
+      if (!mitarbeiter) return;
+      if (state.liquiditaet < 1000) {
+        alert("Nicht genug Liquidität für Motivationsmaßnahmen.");
+        return;
+      }
+      state.liquiditaet -= 1000;
+      mitarbeiter.zufriedenheit = Math.min(100, mitarbeiter.zufriedenheit + 15);
+      mitarbeiter.produktivitaet = 0.8 + (mitarbeiter.zufriedenheit / 100) * 0.4;
+      addGameEvent(`Motivation von ${mitarbeiter.name} gesteigert (+15%). Kosten: 1.000 €`);
+      updateDashboard();
+      updateFinanzen();
+      updateTeamList();
+    }
+
+    // Update Ereignisse Liste on Dashboard
+    function updateEreignisseDashboard() {
+      const ul = document.getElementById("ereignisse-liste");
+      ul.innerHTML = "";
+      state.gameEventsLog.slice(-5).reverse().forEach(e => {
+        const li = document.createElement("li");
+        li.className = "p-3 rounded flex items-center space-x-3 select-text";
+        let iconClass = "";
+        let bgClass = "";
+        switch (e.type) {
+          case "info":
+            iconClass = "fas fa-info-circle text-blue-600";
+            bgClass = "bg-blue-100";
+            break;
+          case "success":
+            iconClass = "fas fa-check-circle text-green-600";
+            bgClass = "bg-green-100";
+            break;
+          case "warning":
+            iconClass = "fas fa-exclamation-triangle text-yellow-600";
+            bgClass = "bg-yellow-100";
+            break;
+          case "danger":
+            iconClass = "fas fa-bolt text-red-600";
+            bgClass = "bg-red-100";
+            break;
+          default:
+            iconClass = "fas fa-info-circle text-gray-600";
+            bgClass = "bg-gray-100";
+        }
+        li.classList.add(bgClass);
+        li.innerHTML = `<i class="${iconClass}"></i><span>${e.text}</span>`;
+        ul.appendChild(li);
+      });
+      if (state.gameEventsLog.length === 0) {
+        ul.innerHTML = '<li class="text-gray-500 select-none">Keine Ereignisse bisher.</li>';
+      }
+    }
+
+    // Update game events list in Ereignisse tab
+    function updateGameEvents() {
+      const ul = document.getElementById("game-events");
+      ul.innerHTML = "";
+      state.events.forEach((e, i) => {
+        const li = document.createElement("li");
+        li.className = "p-3 rounded border border-gray-300 select-text";
+        li.textContent = e.text;
+        if (i === state.currentEventIndex) {
+          li.classList.add("bg-indigo-100", "font-semibold");
+        }
+        ul.appendChild(li);
+      });
+    }
+
+    // Add event to game log
+    function addGameEvent(text, type = "info") {
+      state.gameEventsLog.push({ text, type });
+      if (state.gameEventsLog.length > 50) {
+        state.gameEventsLog.shift();
+      }
+      updateEreignisseDashboard();
+    }
+
+    // Calculate Unternehmenswachstum based on factors
+    function calculateWachstum() {
+      // Basiswachstum durch Produktfortschritt (max 50%)
+      let wachstum = state.produktFortschritt * 0.5;
+
+      // Mitarbeiterzufriedenheit & Produktivität (max +30%)
+      const avgZufriedenheit =
+        state.mitarbeiter.reduce((a, b) => a + b.zufriedenheit, 0) /
+        (state.mitarbeiter.length || 1);
+      const avgProduktivitaet =
+        state.mitarbeiter.reduce((a, b) => a + b.produktivitaet, 0) /
+        (state.mitarbeiter.length || 1);
+      wachstum += (avgZufriedenheit / 100) * 30 * avgProduktivitaet;
+
+      // Marktposition (besser = höheres Wachstum, max +20%)
+      const marktBonus = (10 - state.marktPosition) * 2;
+      wachstum += marktBonus;
+
+      // Budgeteffekte (Marketing & F&E) max +10%
+      const marketingEffekt = Math.min(1, state.marketingBudget / 10000) * 5;
+      const forschungEffekt = Math.min(1, state.forschungBudget / 15000) * 5;
+      wachstum += marketingEffekt + forschungEffekt;
+
+      // Begrenzung auf 100%
+      if (wachstum > 100) wachstum = 100;
+      state.unternehmensWachstum = Math.floor(wachstum);
+    }
+
+    // Update Lager & Lieferanten
+    function updateLagerUndLieferanten() {
+      const lagerTbody = document.getElementById("lager-liste");
+      lagerTbody.innerHTML = "";
+      state.lager.forEach(item => {
+        const tr = document.createElement("tr");
+        tr.className = "border-b border-gray-200 hover:bg-indigo-50 transition";
+        tr.innerHTML = `
+          <td class="py-2 px-3">${item.produkt}</td>
+          <td class="py-2 px-3 text-center">${item.bestand}</td>
+          <td class="py-2 px-3 text-center">${item.nachbestellung}</td>
+          <td class="py-2 px-3 text-center">
+            <button class="btn-nachbestellen text-indigo-600 hover:text-indigo-800" data-id="${item.id}" title="Nachbestellen"><i class="fas fa-truck-loading"></i></button>
+          </td>
+        `;
+        lagerTbody.appendChild(tr);
+      });
+      document.querySelectorAll(".btn-nachbestellen").forEach(btn => {
+        btn.onclick = () => {
+          const id = parseInt(btn.getAttribute("data-id"));
+          nachbestellen(id);
+        };
+      });
+
+      const lieferantenTbody = document.getElementById("lieferanten-liste");
+      lieferantenTbody.innerHTML = "";
+      state.lieferanten.forEach(lieferant => {
+        const tr = document.createElement("tr");
+        tr.className = "border-b border-gray-200 hover:bg-indigo-50 transition";
+        tr.innerHTML = `
+          <td class="py-2 px-3">${lieferant.name}</td>
+          <td class="py-2 px-3 text-center">${lieferant.zuverlaessigkeit}%</td>
+          <td class="py-2 px-3 text-center">${(lieferant.kostenfaktor * 100).toFixed(0)}%</td>
+        `;
+        lieferantenTbody.appendChild(tr);
+      });
+    }
+
+    // Nachbestellen Funktion
+    function nachbestellen(id) {
+      const item = state.lager.find(i => i.id === id);
+      if (!item) return;
+      const kostenProEinheit = 50; // Beispielpreis
+      const menge = 50; // Standardnachbestellung
+      const kosten = menge * kostenProEinheit;
+      if (state.liquiditaet < kosten) {
+        alert("Nicht genug Liquidität für Nachbestellung.");
+        return;
+      }
+      state.liquiditaet -= kosten;
+      item.nachbestellung += menge;
+      addGameEvent(`Nachbestellung: ${menge} Einheiten von ${item.produkt} bestellt. Kosten: ${formatCurrency(kosten)}`, "info");
+      updateDashboard();
+      updateFinanzen();
+      updateLagerUndLieferanten();
+    }
+
+    // Generate random German first name
+    function generateRandomName() {
+      const names = ["Lena", "Max", "Sophie", "Jonas", "Mia", "Leon", "Emma", "Paul", "Anna", "Felix"];
+      return names[Math.floor(Math.random() * names.length)];
+    }
+
+    // Event handlers
+    document.getElementById("gruendung-form").addEventListener("submit", e => {
+      e.preventDefault();
+      const branche = document.getElementById("branche").value;
+      const team = document.getElementById("team").value;
+      const startkapital = parseInt(document.getElementById("startkapital").value, 10);
+      if (!branche || !team || isNaN(startkapital) || startkapital < 1000) {
+        alert("Bitte alle Felder korrekt ausfüllen.");
+        return;
+      }
+      // Reset state for new company
+      state.liquiditaet = startkapital;
+      state.gewinn = 0;
+      state.marketingBudget = Math.floor(startkapital * 0.1);
+      state.forschungBudget = Math.floor(startkapital * 0.15);
+      state.gehaelterBudget = Math.floor(startkapital * 0.3);
+      state.produktFortschritt = 0;
+      state.mitarbeiter = [];
+      state.currentEventIndex = 0;
+      state.marktPosition = 5;
+      state.unternehmensWachstum = 0;
+      state.gameEventsLog = [];
+      state.features = [
+        { id: 1, name: "Benutzer-Login", prioritaet: 3, status: "In Planung" },
+        { id: 2, name: "Dashboard", prioritaet: 2, status: "In Arbeit" },
+        { id: 3, name: "Produktseite", prioritaet: 1, status: "Offen" },
+        { id: 4, name: "Zahlungssystem", prioritaet: 2, status: "Offen" },
+        { id: 5, name: "Kundenfeedback", prioritaet: 3, status: "Offen" },
+      ];
+      state.lager = [
+        { id: 1, produkt: "Produkt A", bestand: 120, nachbestellung: 0 },
+        { id: 2, produkt: "Produkt B", bestand: 80, nachbestellung: 0 },
+      ];
+      state.lieferanten = [
+        { id: 1, name: "Lieferant X", zuverlaessigkeit: 90, kostenfaktor: 1.0 },
+        { id: 2, name: "Lieferant Y", zuverlaessigkeit: 75, kostenfaktor: 0.85 },
+      ];
+      updateDashboard();
+      updateFinanzen();
+      updateProdukt();
+      updateTeamList();
+      updateEreignisseDashboard();
+      updateGameEvents();
+      updateLagerUndLieferanten();
+      document.getElementById("budget-feedback").textContent = "";
+      alert(`Unternehmen in der Branche "${branche}" mit Team "${team}" und Startkapital ${formatCurrency(startkapital)} gegründet!`);
+      showTab("dashboard");
+    });
+
+    document.getElementById("btn-seed").addEventListener("click", () => {
+      if (state.liquiditaet < 10000) {
+        alert("Nicht genug Liquidität für Seed-Runde.");
+        return;
+      }
+      state.liquiditaet += 50000;
+      addGameEvent("Seed-Finanzierung erfolgreich! +50.000 €", "success");
+      updateDashboard();
+      updateFinanzen();
+    });
+
+    document.getElementById("budget-form").addEventListener("submit", e => {
+      e.preventDefault();
+      const geh = parseInt(document.getElementById("budget-gehaelter").value, 10);
+      const mark = parseInt(document.getElementById("budget-marketing").value, 10);
+      const forsch = parseInt(document.getElementById("budget-forschung").value, 10);
+      if (isNaN(geh) || isNaN(mark) || isNaN(forsch) || geh < 0 || mark < 0 || forsch < 0) {
+        alert("Bitte gültige Budgetwerte eingeben.");
+        return;
+      }
+      const gesamt = geh + mark + forsch;
+      if (gesamt > state.liquiditaet + state.gehaelterBudget + state.marketingBudget + state.forschungBudget) {
+        alert("Budget überschreitet verfügbare Mittel.");
+        return;
+      }
+      state.gehaelterBudget = geh;
+      state.marketingBudget = mark;
+      state.forschungBudget = forsch;
+      document.getElementById("budget-feedback").textContent = "Budget erfolgreich aktualisiert.";
+      updateFinanzen();
+    });
+
+    document.getElementById("btn-invest-forschung").addEventListener("click", () => {
+      if (state.liquiditaet < 5000) {
+        alert("Nicht genug Liquidität für F&E-Investition.");
+        return;
+      }
+      state.liquiditaet -= 5000;
+      state.forschungBudget += 5000;
+      state.produktFortschritt += 10;
+      if (state.produktFortschritt > 100) state.produktFortschritt = 100;
+      addGameEvent("5.000 € in Forschung investiert. Produktfortschritt +10%", "success");
+      updateDashboard();
+      updateFinanzen();
+      updateProdukt();
+    });
+
+    document.getElementById("btn-mvp-schnell").addEventListener("click", () => {
+      if (state.produktFortschritt < 50) {
+        alert("Produktfortschritt zu gering für Markteinführung. Investiere mehr in F&E.");
+        return;
+      }
+      addGameEvent("MVP schnell auf den Markt gebracht! Erste Umsätze können generiert werden.", "success");
+      state.gewinn += 10000;
+      state.liquiditaet += 10000;
+      updateDashboard();
+      updateFinanzen();
+    });
+
+    document.getElementById("btn-mvp-qualitaet").addEventListener("click", () => {
+      if (state.produktFortschritt < 80) {
+        alert("Produktfortschritt zu gering für hochwertige Markteinführung. Investiere mehr in F&E.");
+        return;
+      }
+      addGameEvent("MVP mit hoher Qualität auf den Markt gebracht! Kunden sind zufrieden, Umsatz steigt.", "success");
+      state.gewinn += 20000;
+      state.liquiditaet += 20000;
+      updateDashboard();
+      updateFinanzen();
+    });
+
+    document.getElementById("btn-marktforschung").addEventListener("click", () => {
+      if (state.liquiditaet < 2000) {
+        alert("Nicht genug Liquidität für Marktforschung.");
+        return;
+      }
+      state.liquiditaet -= 2000;
+      const trends = [
+        "Nachfrage nach nachhaltigen Produkten steigt.",
+        "Konkurrent bringt neues Produkt auf den Markt.",
+        "Kunden wünschen sich bessere Supportleistungen.",
+        "Markt wächst jährlich um 10%.",
+      ];
+      const trend = trends[Math.floor(Math.random() * trends.length)];
+      document.getElementById("marktforschung-result").textContent = "Ergebnis: " + trend;
+      addGameEvent("Marktforschung durchgeführt: " + trend, "info");
+      updateDashboard();
+      updateFinanzen();
+    });
+
+    document.getElementById("btn-marketing").addEventListener("click", () => {
+      if (state.marketingBudget < 3000) {
+        alert("Nicht genug Marketingbudget.");
+        return;
+      }
+      state.marketingBudget -= 3000;
+      const marketingMitarbeiter = state.mitarbeiter.find(m => m.rolle.toLowerCase() === "marketing");
+      const produktivitaet = marketingMitarbeiter ? marketingMitarbeiter.produktivitaet : 1;
+      const marketingEffekt = Math.floor(7000 * produktivitaet);
+      state.gewinn += marketingEffekt;
+      state.liquiditaet += marketingEffekt;
+      document.getElementById("marketing-result").textContent = "Marketingkampagne erfolgreich! Umsatzsteigerung erzielt.";
+      addGameEvent("Marketingkampagne durchgeführt, Umsatz gesteigert.", "success");
+      updateDashboard();
+      updateFinanzen();
+    });
+
+    document.getElementById("btn-verkaufen").addEventListener("click", () => {
+      const kanal = document.getElementById("vertriebskanal").value;
+      let umsatz = 0;
+      switch (kanal) {
+        case "b2b": umsatz = 8000; break;
+        case "b2c": umsatz = 6000; break;
+        case "online": umsatz = 7000; break;
+        case "handelspartner": umsatz = 5000; break;
+      }
+      const vertriebMitarbeiter = state.mitarbeiter.find(m => m.rolle.toLowerCase() === "vertrieb");
+      const produktivitaet = vertriebMitarbeiter ? vertriebMitarbeiter.produktivitaet : 1;
+      umsatz = Math.floor(umsatz * produktivitaet);
+      state.gewinn += umsatz;
+      state.liquiditaet += umsatz;
+      document.getElementById("verkauf-result").textContent = `Verkauf über ${kanal.toUpperCase()} erfolgreich! Umsatz: ${formatCurrency(umsatz)}`;
+      addGameEvent(`Produkte über ${kanal.toUpperCase()} verkauft, Umsatz ${formatCurrency(umsatz)}.`, "success");
+      updateDashboard();
+      updateFinanzen();
+    });
+
+    document.getElementById("btn-einstellen").addEventListener("click", () => {
+      if (state.liquiditaet < 3000) {
+        alert("Nicht genug Liquidität, um Mitarbeiter einzustellen.");
+        return;
+      }
+      const rolleSelect = document.getElementById("jobrolle");
+      const rolle = rolleSelect.options[rolleSelect.selectedIndex].text;
+      const name = generateRandomName();
+      state.liquiditaet -= 3000;
+      state.mitarbeiter.push({
+        id: state.teamIdCounter++,
+        name,
+        rolle,
+        zufriedenheit: 80,
+        produktivitaet: 1.0,
+        erfahrung: 1,
+      });
+      addGameEvent(`Mitarbeiter ${name} als ${rolle} eingestellt!`, "success");
+      updateDashboard();
+      updateFinanzen();
+      updateTeamList();
+    });
+
+    document.getElementById("btn-nächstes-ereignis").addEventListener("click", () => {
+      state.currentEventIndex++;
+      if (state.currentEventIndex >= state.events.length) {
+        state.currentEventIndex = 0;
+      }
+      const event = state.events[state.currentEventIndex];
+      alert("Ereignis: " + event.text);
+      if (typeof event.effect === "function") {
+        event.effect();
+      }
+      updateDashboard();
+      updateFinanzen();
+      updateProdukt();
+      updateGameEvents();
+      updateEreignisseDashboard();
+    });
+
+    // Periodic updates: Mitarbeiter Zufriedenheit & Produktivität verändern sich leicht
+    function updateMitarbeiterStatus() {
+      state.mitarbeiter.forEach(m => {
+        const change = (Math.random() - 0.5) * 4;
+        m.zufriedenheit = Math.min(100, Math.max(50, m.zufriedenheit + change));
+        m.produktivitaet = 0.8 + (m.zufriedenheit / 100) * 0.4;
+        m.erfahrung = Math.min(10, m.erfahrung + 0.01);
+      });
+      updateTeamList();
+    }
+
+    // Unternehmenswachstum regelmäßig berechnen
+    function gameTick() {
+      updateMitarbeiterStatus();
+      calculateWachstum();
+      updateDashboard();
+      updateLagerBestand();
+    }
+
+    // Lagerbestand automatisch auffüllen (Nachbestellungen ankommen)
+    function updateLagerBestand() {
+      state.lager.forEach(item => {
+        if (item.nachbestellung > 0) {
+          if (Math.random() < 0.5) {
+            item.bestand += item.nachbestellung;
+            addGameEvent(`Nachbestellung von ${item.nachbestellung} Einheiten ${item.produkt} eingetroffen.`);
+            item.nachbestellung = 0;
+            updateLagerUndLieferanten();
+          }
+        }
+      });
+    }
+
+    // Initial updates
+    updateDashboard();
+    updateFinanzen();
+    updateProdukt();
+    updateTeamList();
+    updateEreignisseDashboard();
+    updateGameEvents();
+    updateLagerUndLieferanten();
+
+    // Start game tick every 10 seconds
+    setInterval(gameTick, 10000);
+  </script>
+</body>
+</html>
